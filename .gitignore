@@ -1,0 +1,14 @@
+# Directories
+JUNK/
+.vscode/
+.idea/
+__pycache__/
+.ipynb_checkpoints/
+
+# Files
+*.log
+*.tmp
+*.temp
+*.swp
+.DS_Store
+Thumbs.db
