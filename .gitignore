@@ -1,9 +1,14 @@
 # Directories
 JUNK/
+Dahood_EwE_Files/
 .vscode/
 .idea/
 __pycache__/
 .ipynb_checkpoints/
+PostSurvey.docx
+project_workflow_schematic.*
+render_workflow.R
+Initial_Ethics_FISHMIP.docx
 
 # Files
 *.log

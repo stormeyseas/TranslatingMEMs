@@ -1,4 +1,4 @@
-,"Group name","Hab area (proportion)","Biomass in habitat area (t/km²)","Total mortality (/year)","Production / biomass (/year)","Consumption / biomass (/year)","Ecotrophic Efficiency","Other mortality","Production / consumption","Unassim. consumption","Detritus import (t/km²/year)",
+,"group_dat (Group name)","habarea_dat (Habitat area in proportion)","biomass_dat (Biomass in habitat area in t/km²)","totmort_dat (Total mortality in /year)","prodbio_dat (Production / biomass in /year)","consbio_dat (Consumption / biomass in /year)","ecotrophic_dat (Ecotrophic Efficiency)","othermort_dat (Other mortality)","prodcons_dat (Production / consumption)","unassim_dat (Unassimilated consumption)","detimport_dat (Detritus import in t/km²/year)",
 1,"Killer whales",1,0.007524,,0.02,1.075269,,,,0.2,,
 2,"Leopard Seal",1,0.008352,,0.27,15.16854,,,,0.2,,
 3,"Weddell Seal",1,0.081212,,0.08,4.597701,,,,0.2,,
