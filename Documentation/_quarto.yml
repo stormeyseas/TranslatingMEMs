@@ -1,0 +1,108 @@
+project:
+  type: website
+  output-dir: rendered-htmls
+  render:
+    - index.qmd
+    - 02_model_structure.qmd
+    - 03_parameter_derivation.qmd
+    - 03_1_parameter_assessment.qmd
+    - 04_resource_spectrum.qmd
+    - 05_interaction_matrix.qmd
+    - 06_initial_setup.qmd
+    - 06_1_check_feeding_levels.qmd
+    # - 07_calibration.qmd
+    # - 08_environmental_forcing.qmd
+    # - 09_fishing_scenarios.qmd
+    # - 10_simulations.qmd
+    # - 11_validation.qmd
+    # - 12_ecosystem_indicators.qmd
+    # - 13_sensitivity_analysis.qmd
+    # - 14_results_summary.qmd
+
+website:
+  title: "Translation of Dahood et al. (2019) EwE Model to Mizer"
+  navbar:
+    background: primary
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Development"
+        menu:
+          - text: "Model Structure"
+            href: 02_model_structure.qmd
+          - text: "Parameter Derivation"
+            href: 03_parameter_derivation.qmd
+          - text: "Resource Spectrum"
+            href: 04_resource_spectrum.qmd
+          - text: "Interaction Matrix"
+            href: 05_interaction_matrix.qmd
+          - text: "Initial Setup"
+            href: 06_initial_setup.qmd
+          - text: "Check Feeding Levels"
+            href: 06_1_check_feeding_levels.qmd
+      - text: "Inputs"
+        menu:
+          - text: "Environmental Forcing"
+            href: 08_environmental_forcing.qmd
+          - text: "Fishing Scenarios"
+            href: 09_fishing_scenarios.qmd
+      - text: "Execution"
+        menu:
+          - text: "Calibration"
+            href: 07_calibration.qmd
+          - text: "Simulations"
+            href: 10_simulations.qmd
+      - text: "Evaluation"
+        menu:
+          - text: "Validation"
+            href: 11_validation.qmd
+          - text: "Ecosystem Indicators"
+            href: 12_ecosystem_indicators.qmd
+          - text: "Sensitivity Analysis"
+            href: 13_sensitivity_analysis.qmd
+          - text: "Results Summary"
+            href: 14_results_summary.qmd
+      - text: "GitHub"
+        href: https://github.com/stormeyseas/TranslatingMEMs.git
+        icon: github
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - text: "Overview"
+        href: index.qmd
+      - text: "Model Structure"
+        href: 02_model_structure.qmd
+      - text: "Parameter Derivation"
+        href: 03_parameter_derivation.qmd
+      # - text: "Resource Spectrum"
+      #   href: 04_resource_spectrum.qmd
+      # etc.
+
+bibliography: references.bib
+csl: apa.csl
+
+execute:
+  enabled: true
+  cache: false
+  freeze: false
+
+format:
+  html:
+    theme: simplex
+    grid:
+      sidebar-width: 400px
+      body-width: 1200px
+      margin-width: 250px
+    toc: true
+    toc-location: left
+    toc-depth: 4
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    embed-resources: true
+    fig-align: center
+    fig-width: 7.5
+    fig-height: 6.5
+    css: styles.css
+    keep-md: false

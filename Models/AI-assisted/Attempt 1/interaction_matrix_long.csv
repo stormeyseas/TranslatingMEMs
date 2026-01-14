@@ -1,0 +1,677 @@
+prey,predator,interaction
+Cephalopods,Cephalopods,0
+Cephalopods,Myctophids,0
+Cephalopods,On-shelf fish,0.055
+Cephalopods,Notothenia rossii,0
+Cephalopods,Champsocephalus gunnari,0
+Cephalopods,Gobionotothen gibberifrons,0.01
+Cephalopods,Antarctic Krill,0
+Cephalopods,Other Euphausiids,0
+Cephalopods,Killer Whale,0
+Cephalopods,Leopard Seal,0.078
+Cephalopods,Weddell Seal,0.08
+Cephalopods,Crabeater Seal,0.075
+Cephalopods,Antarctic Fur Seal,0.054
+Cephalopods,Southern Elephant Seal,0.6
+Cephalopods,Sperm Whale,0.85
+Cephalopods,Blue Whale,0
+Cephalopods,Fin Whale,0
+Cephalopods,Minke Whale,0
+Cephalopods,Humpback Whale,0.06
+Cephalopods,Emperor Penguin,0.1
+Cephalopods,Gentoo Penguin,0
+Cephalopods,Chinstrap Penguin,0
+Cephalopods,Adelie Penguin,0
+Cephalopods,Macaroni Penguin,0.01
+Cephalopods,Flying Birds,0.46
+Cephalopods,Salps,0
+Myctophids,Cephalopods,0.02
+Myctophids,Myctophids,0
+Myctophids,On-shelf fish,0.02
+Myctophids,Notothenia rossii,0.1
+Myctophids,Champsocephalus gunnari,0.01
+Myctophids,Gobionotothen gibberifrons,0.02
+Myctophids,Antarctic Krill,0
+Myctophids,Other Euphausiids,0
+Myctophids,Killer Whale,0.029
+Myctophids,Leopard Seal,0.04
+Myctophids,Weddell Seal,0.05
+Myctophids,Crabeater Seal,0.075
+Myctophids,Antarctic Fur Seal,0.2
+Myctophids,Southern Elephant Seal,0.1
+Myctophids,Sperm Whale,0.005
+Myctophids,Blue Whale,0
+Myctophids,Fin Whale,0.015
+Myctophids,Minke Whale,0.01
+Myctophids,Humpback Whale,0.04
+Myctophids,Emperor Penguin,0
+Myctophids,Gentoo Penguin,0.1
+Myctophids,Chinstrap Penguin,0.0225
+Myctophids,Adelie Penguin,0.0125
+Myctophids,Macaroni Penguin,0.1
+Myctophids,Flying Birds,0.043
+Myctophids,Salps,0
+On-shelf fish,Cephalopods,0.02
+On-shelf fish,Myctophids,0
+On-shelf fish,On-shelf fish,0
+On-shelf fish,Notothenia rossii,0
+On-shelf fish,Champsocephalus gunnari,0
+On-shelf fish,Gobionotothen gibberifrons,0
+On-shelf fish,Antarctic Krill,0
+On-shelf fish,Other Euphausiids,0
+On-shelf fish,Killer Whale,0.02
+On-shelf fish,Leopard Seal,0
+On-shelf fish,Weddell Seal,0.6
+On-shelf fish,Crabeater Seal,0.07
+On-shelf fish,Antarctic Fur Seal,0.2
+On-shelf fish,Southern Elephant Seal,0.14
+On-shelf fish,Sperm Whale,0.045
+On-shelf fish,Blue Whale,0
+On-shelf fish,Fin Whale,0.015
+On-shelf fish,Minke Whale,0.01
+On-shelf fish,Humpback Whale,0.04
+On-shelf fish,Emperor Penguin,0.38
+On-shelf fish,Gentoo Penguin,0.1
+On-shelf fish,Chinstrap Penguin,0.0225
+On-shelf fish,Adelie Penguin,0
+On-shelf fish,Macaroni Penguin,0.12
+On-shelf fish,Flying Birds,0.087
+On-shelf fish,Salps,0
+Notothenia rossii,Cephalopods,0
+Notothenia rossii,Myctophids,0
+Notothenia rossii,On-shelf fish,0
+Notothenia rossii,Notothenia rossii,0
+Notothenia rossii,Champsocephalus gunnari,0
+Notothenia rossii,Gobionotothen gibberifrons,0
+Notothenia rossii,Antarctic Krill,0
+Notothenia rossii,Other Euphausiids,0
+Notothenia rossii,Killer Whale,0.005
+Notothenia rossii,Leopard Seal,0
+Notothenia rossii,Weddell Seal,0
+Notothenia rossii,Crabeater Seal,0
+Notothenia rossii,Antarctic Fur Seal,0
+Notothenia rossii,Southern Elephant Seal,0.1
+Notothenia rossii,Sperm Whale,0
+Notothenia rossii,Blue Whale,0
+Notothenia rossii,Fin Whale,0
+Notothenia rossii,Minke Whale,0
+Notothenia rossii,Humpback Whale,0
+Notothenia rossii,Emperor Penguin,0
+Notothenia rossii,Gentoo Penguin,0
+Notothenia rossii,Chinstrap Penguin,0
+Notothenia rossii,Adelie Penguin,0
+Notothenia rossii,Macaroni Penguin,0
+Notothenia rossii,Flying Birds,0
+Notothenia rossii,Salps,0
+Champsocephalus gunnari,Cephalopods,0
+Champsocephalus gunnari,Myctophids,0
+Champsocephalus gunnari,On-shelf fish,0.015
+Champsocephalus gunnari,Notothenia rossii,0
+Champsocephalus gunnari,Champsocephalus gunnari,0
+Champsocephalus gunnari,Gobionotothen gibberifrons,0
+Champsocephalus gunnari,Antarctic Krill,0
+Champsocephalus gunnari,Other Euphausiids,0
+Champsocephalus gunnari,Killer Whale,0
+Champsocephalus gunnari,Leopard Seal,0
+Champsocephalus gunnari,Weddell Seal,0
+Champsocephalus gunnari,Crabeater Seal,0
+Champsocephalus gunnari,Antarctic Fur Seal,0
+Champsocephalus gunnari,Southern Elephant Seal,0
+Champsocephalus gunnari,Sperm Whale,0
+Champsocephalus gunnari,Blue Whale,0
+Champsocephalus gunnari,Fin Whale,0
+Champsocephalus gunnari,Minke Whale,0
+Champsocephalus gunnari,Humpback Whale,0
+Champsocephalus gunnari,Emperor Penguin,0
+Champsocephalus gunnari,Gentoo Penguin,0
+Champsocephalus gunnari,Chinstrap Penguin,0
+Champsocephalus gunnari,Adelie Penguin,5e-4
+Champsocephalus gunnari,Macaroni Penguin,0
+Champsocephalus gunnari,Flying Birds,0
+Champsocephalus gunnari,Salps,0
+Gobionotothen gibberifrons,Cephalopods,0
+Gobionotothen gibberifrons,Myctophids,0
+Gobionotothen gibberifrons,On-shelf fish,0
+Gobionotothen gibberifrons,Notothenia rossii,0
+Gobionotothen gibberifrons,Champsocephalus gunnari,0
+Gobionotothen gibberifrons,Gobionotothen gibberifrons,0
+Gobionotothen gibberifrons,Antarctic Krill,0
+Gobionotothen gibberifrons,Other Euphausiids,0
+Gobionotothen gibberifrons,Killer Whale,0.01
+Gobionotothen gibberifrons,Leopard Seal,0.15
+Gobionotothen gibberifrons,Weddell Seal,0.22
+Gobionotothen gibberifrons,Crabeater Seal,0
+Gobionotothen gibberifrons,Antarctic Fur Seal,0
+Gobionotothen gibberifrons,Southern Elephant Seal,0.06
+Gobionotothen gibberifrons,Sperm Whale,0
+Gobionotothen gibberifrons,Blue Whale,0
+Gobionotothen gibberifrons,Fin Whale,0
+Gobionotothen gibberifrons,Minke Whale,0
+Gobionotothen gibberifrons,Humpback Whale,0
+Gobionotothen gibberifrons,Emperor Penguin,0
+Gobionotothen gibberifrons,Gentoo Penguin,0
+Gobionotothen gibberifrons,Chinstrap Penguin,0
+Gobionotothen gibberifrons,Adelie Penguin,0.0125
+Gobionotothen gibberifrons,Macaroni Penguin,0
+Gobionotothen gibberifrons,Flying Birds,0
+Gobionotothen gibberifrons,Salps,0
+Antarctic Krill,Cephalopods,0.4
+Antarctic Krill,Myctophids,0.25
+Antarctic Krill,On-shelf fish,0.25
+Antarctic Krill,Notothenia rossii,0.6
+Antarctic Krill,Champsocephalus gunnari,0.9
+Antarctic Krill,Gobionotothen gibberifrons,0.09
+Antarctic Krill,Antarctic Krill,0
+Antarctic Krill,Other Euphausiids,0
+Antarctic Krill,Killer Whale,0
+Antarctic Krill,Leopard Seal,0.7
+Antarctic Krill,Weddell Seal,0
+Antarctic Krill,Crabeater Seal,0.78
+Antarctic Krill,Antarctic Fur Seal,0.5
+Antarctic Krill,Southern Elephant Seal,0
+Antarctic Krill,Sperm Whale,0
+Antarctic Krill,Blue Whale,0.61
+Antarctic Krill,Fin Whale,0.71
+Antarctic Krill,Minke Whale,0.76
+Antarctic Krill,Humpback Whale,0.76
+Antarctic Krill,Emperor Penguin,0.52
+Antarctic Krill,Gentoo Penguin,0.8
+Antarctic Krill,Chinstrap Penguin,0.95
+Antarctic Krill,Adelie Penguin,0.962
+Antarctic Krill,Macaroni Penguin,0.34
+Antarctic Krill,Flying Birds,0.3
+Antarctic Krill,Salps,0.001
+Other Euphausiids,Cephalopods,0.15
+Other Euphausiids,Myctophids,0.35
+Other Euphausiids,On-shelf fish,0.135
+Other Euphausiids,Notothenia rossii,0.2
+Other Euphausiids,Champsocephalus gunnari,0.08
+Other Euphausiids,Gobionotothen gibberifrons,0
+Other Euphausiids,Antarctic Krill,0
+Other Euphausiids,Other Euphausiids,0
+Other Euphausiids,Killer Whale,0
+Other Euphausiids,Leopard Seal,0
+Other Euphausiids,Weddell Seal,0
+Other Euphausiids,Crabeater Seal,0
+Other Euphausiids,Antarctic Fur Seal,0
+Other Euphausiids,Southern Elephant Seal,0
+Other Euphausiids,Sperm Whale,0
+Other Euphausiids,Blue Whale,0.2
+Other Euphausiids,Fin Whale,0.12
+Other Euphausiids,Minke Whale,0.11
+Other Euphausiids,Humpback Whale,0
+Other Euphausiids,Emperor Penguin,0
+Other Euphausiids,Gentoo Penguin,0
+Other Euphausiids,Chinstrap Penguin,0
+Other Euphausiids,Adelie Penguin,0
+Other Euphausiids,Macaroni Penguin,0.35
+Other Euphausiids,Flying Birds,0
+Other Euphausiids,Salps,0
+Killer Whale,Cephalopods,0
+Killer Whale,Myctophids,0
+Killer Whale,On-shelf fish,0
+Killer Whale,Notothenia rossii,0
+Killer Whale,Champsocephalus gunnari,0
+Killer Whale,Gobionotothen gibberifrons,0
+Killer Whale,Antarctic Krill,0
+Killer Whale,Other Euphausiids,0
+Killer Whale,Killer Whale,0
+Killer Whale,Leopard Seal,0
+Killer Whale,Weddell Seal,0
+Killer Whale,Crabeater Seal,0
+Killer Whale,Antarctic Fur Seal,0
+Killer Whale,Southern Elephant Seal,0
+Killer Whale,Sperm Whale,0
+Killer Whale,Blue Whale,0
+Killer Whale,Fin Whale,0
+Killer Whale,Minke Whale,0
+Killer Whale,Humpback Whale,0
+Killer Whale,Emperor Penguin,0
+Killer Whale,Gentoo Penguin,0
+Killer Whale,Chinstrap Penguin,0
+Killer Whale,Adelie Penguin,0
+Killer Whale,Macaroni Penguin,0
+Killer Whale,Flying Birds,0
+Killer Whale,Salps,0
+Leopard Seal,Cephalopods,0
+Leopard Seal,Myctophids,0
+Leopard Seal,On-shelf fish,0
+Leopard Seal,Notothenia rossii,0
+Leopard Seal,Champsocephalus gunnari,0
+Leopard Seal,Gobionotothen gibberifrons,0
+Leopard Seal,Antarctic Krill,0
+Leopard Seal,Other Euphausiids,0
+Leopard Seal,Killer Whale,0.03
+Leopard Seal,Leopard Seal,0
+Leopard Seal,Weddell Seal,0
+Leopard Seal,Crabeater Seal,0
+Leopard Seal,Antarctic Fur Seal,0
+Leopard Seal,Southern Elephant Seal,0
+Leopard Seal,Sperm Whale,0
+Leopard Seal,Blue Whale,0
+Leopard Seal,Fin Whale,0
+Leopard Seal,Minke Whale,0
+Leopard Seal,Humpback Whale,0
+Leopard Seal,Emperor Penguin,0
+Leopard Seal,Gentoo Penguin,0
+Leopard Seal,Chinstrap Penguin,0
+Leopard Seal,Adelie Penguin,0
+Leopard Seal,Macaroni Penguin,0
+Leopard Seal,Flying Birds,0
+Leopard Seal,Salps,0
+Weddell Seal,Cephalopods,0
+Weddell Seal,Myctophids,0
+Weddell Seal,On-shelf fish,0
+Weddell Seal,Notothenia rossii,0
+Weddell Seal,Champsocephalus gunnari,0
+Weddell Seal,Gobionotothen gibberifrons,0
+Weddell Seal,Antarctic Krill,0
+Weddell Seal,Other Euphausiids,0
+Weddell Seal,Killer Whale,0.465
+Weddell Seal,Leopard Seal,0
+Weddell Seal,Weddell Seal,0
+Weddell Seal,Crabeater Seal,0
+Weddell Seal,Antarctic Fur Seal,0
+Weddell Seal,Southern Elephant Seal,0
+Weddell Seal,Sperm Whale,0
+Weddell Seal,Blue Whale,0
+Weddell Seal,Fin Whale,0
+Weddell Seal,Minke Whale,0
+Weddell Seal,Humpback Whale,0
+Weddell Seal,Emperor Penguin,0
+Weddell Seal,Gentoo Penguin,0
+Weddell Seal,Chinstrap Penguin,0
+Weddell Seal,Adelie Penguin,0
+Weddell Seal,Macaroni Penguin,0
+Weddell Seal,Flying Birds,0
+Weddell Seal,Salps,0
+Crabeater Seal,Cephalopods,0
+Crabeater Seal,Myctophids,0
+Crabeater Seal,On-shelf fish,0
+Crabeater Seal,Notothenia rossii,0
+Crabeater Seal,Champsocephalus gunnari,0
+Crabeater Seal,Gobionotothen gibberifrons,0
+Crabeater Seal,Antarctic Krill,0
+Crabeater Seal,Other Euphausiids,0
+Crabeater Seal,Killer Whale,0.365
+Crabeater Seal,Leopard Seal,0
+Crabeater Seal,Weddell Seal,0
+Crabeater Seal,Crabeater Seal,0
+Crabeater Seal,Antarctic Fur Seal,0
+Crabeater Seal,Southern Elephant Seal,0
+Crabeater Seal,Sperm Whale,0
+Crabeater Seal,Blue Whale,0
+Crabeater Seal,Fin Whale,0
+Crabeater Seal,Minke Whale,0
+Crabeater Seal,Humpback Whale,0
+Crabeater Seal,Emperor Penguin,0
+Crabeater Seal,Gentoo Penguin,0
+Crabeater Seal,Chinstrap Penguin,0
+Crabeater Seal,Adelie Penguin,0
+Crabeater Seal,Macaroni Penguin,0
+Crabeater Seal,Flying Birds,0
+Crabeater Seal,Salps,0
+Antarctic Fur Seal,Cephalopods,0
+Antarctic Fur Seal,Myctophids,0
+Antarctic Fur Seal,On-shelf fish,0
+Antarctic Fur Seal,Notothenia rossii,0
+Antarctic Fur Seal,Champsocephalus gunnari,0
+Antarctic Fur Seal,Gobionotothen gibberifrons,0
+Antarctic Fur Seal,Antarctic Krill,0
+Antarctic Fur Seal,Other Euphausiids,0
+Antarctic Fur Seal,Killer Whale,0
+Antarctic Fur Seal,Leopard Seal,0.001
+Antarctic Fur Seal,Weddell Seal,0
+Antarctic Fur Seal,Crabeater Seal,0
+Antarctic Fur Seal,Antarctic Fur Seal,0
+Antarctic Fur Seal,Southern Elephant Seal,0
+Antarctic Fur Seal,Sperm Whale,0
+Antarctic Fur Seal,Blue Whale,0
+Antarctic Fur Seal,Fin Whale,0
+Antarctic Fur Seal,Minke Whale,0
+Antarctic Fur Seal,Humpback Whale,0
+Antarctic Fur Seal,Emperor Penguin,0
+Antarctic Fur Seal,Gentoo Penguin,0
+Antarctic Fur Seal,Chinstrap Penguin,0
+Antarctic Fur Seal,Adelie Penguin,0
+Antarctic Fur Seal,Macaroni Penguin,0
+Antarctic Fur Seal,Flying Birds,0
+Antarctic Fur Seal,Salps,0
+Southern Elephant Seal,Cephalopods,0
+Southern Elephant Seal,Myctophids,0
+Southern Elephant Seal,On-shelf fish,0
+Southern Elephant Seal,Notothenia rossii,0
+Southern Elephant Seal,Champsocephalus gunnari,0
+Southern Elephant Seal,Gobionotothen gibberifrons,0
+Southern Elephant Seal,Antarctic Krill,0
+Southern Elephant Seal,Other Euphausiids,0
+Southern Elephant Seal,Killer Whale,0.01
+Southern Elephant Seal,Leopard Seal,0
+Southern Elephant Seal,Weddell Seal,0
+Southern Elephant Seal,Crabeater Seal,0
+Southern Elephant Seal,Antarctic Fur Seal,0
+Southern Elephant Seal,Southern Elephant Seal,0
+Southern Elephant Seal,Sperm Whale,0
+Southern Elephant Seal,Blue Whale,0
+Southern Elephant Seal,Fin Whale,0
+Southern Elephant Seal,Minke Whale,0
+Southern Elephant Seal,Humpback Whale,0
+Southern Elephant Seal,Emperor Penguin,0
+Southern Elephant Seal,Gentoo Penguin,0
+Southern Elephant Seal,Chinstrap Penguin,0
+Southern Elephant Seal,Adelie Penguin,0
+Southern Elephant Seal,Macaroni Penguin,0
+Southern Elephant Seal,Flying Birds,0
+Southern Elephant Seal,Salps,0
+Sperm Whale,Cephalopods,0
+Sperm Whale,Myctophids,0
+Sperm Whale,On-shelf fish,0
+Sperm Whale,Notothenia rossii,0
+Sperm Whale,Champsocephalus gunnari,0
+Sperm Whale,Gobionotothen gibberifrons,0
+Sperm Whale,Antarctic Krill,0
+Sperm Whale,Other Euphausiids,0
+Sperm Whale,Killer Whale,0
+Sperm Whale,Leopard Seal,0
+Sperm Whale,Weddell Seal,0
+Sperm Whale,Crabeater Seal,0
+Sperm Whale,Antarctic Fur Seal,0
+Sperm Whale,Southern Elephant Seal,0
+Sperm Whale,Sperm Whale,0
+Sperm Whale,Blue Whale,0
+Sperm Whale,Fin Whale,0
+Sperm Whale,Minke Whale,0
+Sperm Whale,Humpback Whale,0
+Sperm Whale,Emperor Penguin,0
+Sperm Whale,Gentoo Penguin,0
+Sperm Whale,Chinstrap Penguin,0
+Sperm Whale,Adelie Penguin,0
+Sperm Whale,Macaroni Penguin,0
+Sperm Whale,Flying Birds,0
+Sperm Whale,Salps,0
+Blue Whale,Cephalopods,0
+Blue Whale,Myctophids,0
+Blue Whale,On-shelf fish,0
+Blue Whale,Notothenia rossii,0
+Blue Whale,Champsocephalus gunnari,0
+Blue Whale,Gobionotothen gibberifrons,0
+Blue Whale,Antarctic Krill,0
+Blue Whale,Other Euphausiids,0
+Blue Whale,Killer Whale,0.01
+Blue Whale,Leopard Seal,0
+Blue Whale,Weddell Seal,0
+Blue Whale,Crabeater Seal,0
+Blue Whale,Antarctic Fur Seal,0
+Blue Whale,Southern Elephant Seal,0
+Blue Whale,Sperm Whale,0
+Blue Whale,Blue Whale,0
+Blue Whale,Fin Whale,0
+Blue Whale,Minke Whale,0
+Blue Whale,Humpback Whale,0
+Blue Whale,Emperor Penguin,0
+Blue Whale,Gentoo Penguin,0
+Blue Whale,Chinstrap Penguin,0
+Blue Whale,Adelie Penguin,0
+Blue Whale,Macaroni Penguin,0
+Blue Whale,Flying Birds,0
+Blue Whale,Salps,0
+Fin Whale,Cephalopods,0
+Fin Whale,Myctophids,0
+Fin Whale,On-shelf fish,0
+Fin Whale,Notothenia rossii,0
+Fin Whale,Champsocephalus gunnari,0
+Fin Whale,Gobionotothen gibberifrons,0
+Fin Whale,Antarctic Krill,0
+Fin Whale,Other Euphausiids,0
+Fin Whale,Killer Whale,0.01
+Fin Whale,Leopard Seal,0
+Fin Whale,Weddell Seal,0
+Fin Whale,Crabeater Seal,0
+Fin Whale,Antarctic Fur Seal,0
+Fin Whale,Southern Elephant Seal,0
+Fin Whale,Sperm Whale,0
+Fin Whale,Blue Whale,0
+Fin Whale,Fin Whale,0
+Fin Whale,Minke Whale,0
+Fin Whale,Humpback Whale,0
+Fin Whale,Emperor Penguin,0
+Fin Whale,Gentoo Penguin,0
+Fin Whale,Chinstrap Penguin,0
+Fin Whale,Adelie Penguin,0
+Fin Whale,Macaroni Penguin,0
+Fin Whale,Flying Birds,0
+Fin Whale,Salps,0
+Minke Whale,Cephalopods,0
+Minke Whale,Myctophids,0
+Minke Whale,On-shelf fish,0
+Minke Whale,Notothenia rossii,0
+Minke Whale,Champsocephalus gunnari,0
+Minke Whale,Gobionotothen gibberifrons,0
+Minke Whale,Antarctic Krill,0
+Minke Whale,Other Euphausiids,0
+Minke Whale,Killer Whale,0.01
+Minke Whale,Leopard Seal,0
+Minke Whale,Weddell Seal,0
+Minke Whale,Crabeater Seal,0
+Minke Whale,Antarctic Fur Seal,0
+Minke Whale,Southern Elephant Seal,0
+Minke Whale,Sperm Whale,0
+Minke Whale,Blue Whale,0
+Minke Whale,Fin Whale,0
+Minke Whale,Minke Whale,0
+Minke Whale,Humpback Whale,0
+Minke Whale,Emperor Penguin,0
+Minke Whale,Gentoo Penguin,0
+Minke Whale,Chinstrap Penguin,0
+Minke Whale,Adelie Penguin,0
+Minke Whale,Macaroni Penguin,0
+Minke Whale,Flying Birds,0
+Minke Whale,Salps,0
+Humpback Whale,Cephalopods,0
+Humpback Whale,Myctophids,0
+Humpback Whale,On-shelf fish,0
+Humpback Whale,Notothenia rossii,0
+Humpback Whale,Champsocephalus gunnari,0
+Humpback Whale,Gobionotothen gibberifrons,0
+Humpback Whale,Antarctic Krill,0
+Humpback Whale,Other Euphausiids,0
+Humpback Whale,Killer Whale,0.01
+Humpback Whale,Leopard Seal,0
+Humpback Whale,Weddell Seal,0
+Humpback Whale,Crabeater Seal,0
+Humpback Whale,Antarctic Fur Seal,0
+Humpback Whale,Southern Elephant Seal,0
+Humpback Whale,Sperm Whale,0
+Humpback Whale,Blue Whale,0
+Humpback Whale,Fin Whale,0
+Humpback Whale,Minke Whale,0
+Humpback Whale,Humpback Whale,0
+Humpback Whale,Emperor Penguin,0
+Humpback Whale,Gentoo Penguin,0
+Humpback Whale,Chinstrap Penguin,0
+Humpback Whale,Adelie Penguin,0
+Humpback Whale,Macaroni Penguin,0
+Humpback Whale,Flying Birds,0
+Humpback Whale,Salps,0
+Emperor Penguin,Cephalopods,0
+Emperor Penguin,Myctophids,0
+Emperor Penguin,On-shelf fish,0
+Emperor Penguin,Notothenia rossii,0
+Emperor Penguin,Champsocephalus gunnari,0
+Emperor Penguin,Gobionotothen gibberifrons,0
+Emperor Penguin,Antarctic Krill,0
+Emperor Penguin,Other Euphausiids,0
+Emperor Penguin,Killer Whale,1e-5
+Emperor Penguin,Leopard Seal,0
+Emperor Penguin,Weddell Seal,0
+Emperor Penguin,Crabeater Seal,0
+Emperor Penguin,Antarctic Fur Seal,0
+Emperor Penguin,Southern Elephant Seal,0
+Emperor Penguin,Sperm Whale,0
+Emperor Penguin,Blue Whale,0
+Emperor Penguin,Fin Whale,0
+Emperor Penguin,Minke Whale,0
+Emperor Penguin,Humpback Whale,0
+Emperor Penguin,Emperor Penguin,0
+Emperor Penguin,Gentoo Penguin,0
+Emperor Penguin,Chinstrap Penguin,0
+Emperor Penguin,Adelie Penguin,0
+Emperor Penguin,Macaroni Penguin,0
+Emperor Penguin,Flying Birds,0
+Emperor Penguin,Salps,0
+Gentoo Penguin,Cephalopods,0
+Gentoo Penguin,Myctophids,0
+Gentoo Penguin,On-shelf fish,0
+Gentoo Penguin,Notothenia rossii,0
+Gentoo Penguin,Champsocephalus gunnari,0
+Gentoo Penguin,Gobionotothen gibberifrons,0
+Gentoo Penguin,Antarctic Krill,0
+Gentoo Penguin,Other Euphausiids,0
+Gentoo Penguin,Killer Whale,0.002
+Gentoo Penguin,Leopard Seal,0.001
+Gentoo Penguin,Weddell Seal,0
+Gentoo Penguin,Crabeater Seal,0
+Gentoo Penguin,Antarctic Fur Seal,0.01
+Gentoo Penguin,Southern Elephant Seal,0
+Gentoo Penguin,Sperm Whale,0
+Gentoo Penguin,Blue Whale,0
+Gentoo Penguin,Fin Whale,0
+Gentoo Penguin,Minke Whale,0
+Gentoo Penguin,Humpback Whale,0
+Gentoo Penguin,Emperor Penguin,0
+Gentoo Penguin,Gentoo Penguin,0
+Gentoo Penguin,Chinstrap Penguin,0
+Gentoo Penguin,Adelie Penguin,0
+Gentoo Penguin,Macaroni Penguin,0
+Gentoo Penguin,Flying Birds,0
+Gentoo Penguin,Salps,0
+Chinstrap Penguin,Cephalopods,0
+Chinstrap Penguin,Myctophids,0
+Chinstrap Penguin,On-shelf fish,0
+Chinstrap Penguin,Notothenia rossii,0
+Chinstrap Penguin,Champsocephalus gunnari,0
+Chinstrap Penguin,Gobionotothen gibberifrons,0
+Chinstrap Penguin,Antarctic Krill,0
+Chinstrap Penguin,Other Euphausiids,0
+Chinstrap Penguin,Killer Whale,0.02
+Chinstrap Penguin,Leopard Seal,0.03
+Chinstrap Penguin,Weddell Seal,0
+Chinstrap Penguin,Crabeater Seal,0
+Chinstrap Penguin,Antarctic Fur Seal,0.03
+Chinstrap Penguin,Southern Elephant Seal,0
+Chinstrap Penguin,Sperm Whale,0
+Chinstrap Penguin,Blue Whale,0
+Chinstrap Penguin,Fin Whale,0
+Chinstrap Penguin,Minke Whale,0
+Chinstrap Penguin,Humpback Whale,0
+Chinstrap Penguin,Emperor Penguin,0
+Chinstrap Penguin,Gentoo Penguin,0
+Chinstrap Penguin,Chinstrap Penguin,0
+Chinstrap Penguin,Adelie Penguin,0
+Chinstrap Penguin,Macaroni Penguin,0
+Chinstrap Penguin,Flying Birds,0
+Chinstrap Penguin,Salps,0
+Adelie Penguin,Cephalopods,0
+Adelie Penguin,Myctophids,0
+Adelie Penguin,On-shelf fish,0
+Adelie Penguin,Notothenia rossii,0
+Adelie Penguin,Champsocephalus gunnari,0
+Adelie Penguin,Gobionotothen gibberifrons,0
+Adelie Penguin,Antarctic Krill,0
+Adelie Penguin,Other Euphausiids,0
+Adelie Penguin,Killer Whale,0.004
+Adelie Penguin,Leopard Seal,0
+Adelie Penguin,Weddell Seal,0
+Adelie Penguin,Crabeater Seal,0
+Adelie Penguin,Antarctic Fur Seal,0.005
+Adelie Penguin,Southern Elephant Seal,0
+Adelie Penguin,Sperm Whale,0
+Adelie Penguin,Blue Whale,0
+Adelie Penguin,Fin Whale,0
+Adelie Penguin,Minke Whale,0
+Adelie Penguin,Humpback Whale,0
+Adelie Penguin,Emperor Penguin,0
+Adelie Penguin,Gentoo Penguin,0
+Adelie Penguin,Chinstrap Penguin,0
+Adelie Penguin,Adelie Penguin,0
+Adelie Penguin,Macaroni Penguin,0
+Adelie Penguin,Flying Birds,0
+Adelie Penguin,Salps,0
+Macaroni Penguin,Cephalopods,0
+Macaroni Penguin,Myctophids,0
+Macaroni Penguin,On-shelf fish,0
+Macaroni Penguin,Notothenia rossii,0
+Macaroni Penguin,Champsocephalus gunnari,0
+Macaroni Penguin,Gobionotothen gibberifrons,0
+Macaroni Penguin,Antarctic Krill,0
+Macaroni Penguin,Other Euphausiids,0
+Macaroni Penguin,Killer Whale,0
+Macaroni Penguin,Leopard Seal,0
+Macaroni Penguin,Weddell Seal,0
+Macaroni Penguin,Crabeater Seal,0
+Macaroni Penguin,Antarctic Fur Seal,0.001
+Macaroni Penguin,Southern Elephant Seal,0
+Macaroni Penguin,Sperm Whale,0
+Macaroni Penguin,Blue Whale,0
+Macaroni Penguin,Fin Whale,0
+Macaroni Penguin,Minke Whale,0
+Macaroni Penguin,Humpback Whale,0
+Macaroni Penguin,Emperor Penguin,0
+Macaroni Penguin,Gentoo Penguin,0
+Macaroni Penguin,Chinstrap Penguin,0
+Macaroni Penguin,Adelie Penguin,0
+Macaroni Penguin,Macaroni Penguin,0
+Macaroni Penguin,Flying Birds,0
+Macaroni Penguin,Salps,0
+Flying Birds,Cephalopods,0
+Flying Birds,Myctophids,0
+Flying Birds,On-shelf fish,0
+Flying Birds,Notothenia rossii,0
+Flying Birds,Champsocephalus gunnari,0
+Flying Birds,Gobionotothen gibberifrons,0
+Flying Birds,Antarctic Krill,0
+Flying Birds,Other Euphausiids,0
+Flying Birds,Killer Whale,0
+Flying Birds,Leopard Seal,0
+Flying Birds,Weddell Seal,0
+Flying Birds,Crabeater Seal,0
+Flying Birds,Antarctic Fur Seal,0
+Flying Birds,Southern Elephant Seal,0
+Flying Birds,Sperm Whale,0
+Flying Birds,Blue Whale,0
+Flying Birds,Fin Whale,0
+Flying Birds,Minke Whale,0
+Flying Birds,Humpback Whale,0
+Flying Birds,Emperor Penguin,0
+Flying Birds,Gentoo Penguin,0
+Flying Birds,Chinstrap Penguin,0
+Flying Birds,Adelie Penguin,0
+Flying Birds,Macaroni Penguin,0
+Flying Birds,Flying Birds,0
+Flying Birds,Salps,0
+Salps,Cephalopods,0
+Salps,Myctophids,0
+Salps,On-shelf fish,0.01
+Salps,Notothenia rossii,0.02
+Salps,Champsocephalus gunnari,0
+Salps,Gobionotothen gibberifrons,0.17
+Salps,Antarctic Krill,0
+Salps,Other Euphausiids,0
+Salps,Killer Whale,0
+Salps,Leopard Seal,0
+Salps,Weddell Seal,0
+Salps,Crabeater Seal,0
+Salps,Antarctic Fur Seal,0
+Salps,Southern Elephant Seal,0
+Salps,Sperm Whale,0
+Salps,Blue Whale,0
+Salps,Fin Whale,0
+Salps,Minke Whale,0
+Salps,Humpback Whale,0
+Salps,Emperor Penguin,0
+Salps,Gentoo Penguin,0
+Salps,Chinstrap Penguin,0
+Salps,Adelie Penguin,0
+Salps,Macaroni Penguin,0
+Salps,Flying Birds,0
+Salps,Salps,0

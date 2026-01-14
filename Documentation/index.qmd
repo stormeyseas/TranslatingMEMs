@@ -1,0 +1,321 @@
+---
+title: "Translation of Dahood et al. (2019) EwE Model to Mizer"
+subtitle: "Western Antarctic Peninsula Ecosystem Model"
+author: 
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+---
+
+# Overview
+
+This document provides a step-by-step guide to translating the Ecopath with Ecosim (EwE) model developed by Dahood et al. (2019) for the Western Antarctic Peninsula into a size-based multi-species model using the `mizer` package in R. The translated model will be used to run simulations following FishMIP/ISIMIP3a conventions and produce diagnostics for model validation.
+
+## Project Goals
+
+1. **Develop a mizer model** based on the Dahood et al. (2019) Ecopath with Ecosim model
+2. **Run analogous simulations** using FishMIP/ISIMIP3a forcing data and conventions
+3. **Produce diagnostics** (validation plots, skill metrics) following ISIMIP and FishMIP guidance
+
+## Key References
+
+- **Study**: Dahood, A., Watters, G. M., & de Mutsert, K. (2019). Using sea-ice to calibrate a dynamic trophic model for the Western Antarctic Peninsula. *PloS one*, 14(4), e0214814.
+- **Mizer**: [Mizer documentation](https://sizespectrum.org/mizer/)
+- **FishMIP**: [Fisheries and Marine Ecosystem Model Intercomparison Project](https://www.isimip.org/gettingstarted/marine-ecosystems-fisheries/)
+- **ISIMIP3a**: [Inter-Sectoral Impact Model Intercomparison Project Protocol](https://www.isimip.org/protocol/)
+
+# Workflow Steps
+
+## Step 1: Data Extraction and Preparation {#sec-data-extraction}
+
+Extract and prepare data from the Dahood et al. (2019) EwE model files:
+
+- Load and parse EwE input files (Basic inputs, Diet composition, Time series)
+- Extract species/functional group information
+- Extract biomass, production, consumption, and diet data
+- Identify key parameters for mizer translation
+- Create standardized data structures for model setup
+
+**Key outputs**:
+
+- Species parameter table
+- Diet/interaction matrix
+- Initial biomass estimates
+- Life history parameters
+
+This step was completed prior to project start and the files were provided.
+
+## Step 2: Mizer Model Structure and Conceptual Design {#sec-model-structure}
+
+**Document**: [02_model_structure.qmd](02_model_structure.qmd)
+
+Design the mizer model structure:
+
+- Map EwE functional groups to mizer species
+- Determine which groups can be represented as size-structured species
+- Identify resource spectrum representation (plankton/benthos)
+- Design predator-prey interaction framework
+- Document assumptions and simplifications in the translation
+
+**Key decisions**:
+
+- Which EwE groups become mizer species vs. resources
+- Size range and discretization for each species
+- Handling of non-fish groups (seals, whales, seabirds, etc.)
+
+## Step 3: Parameter Derivation and Conversion {#sec-parameter-conversion}
+
+**Document**: [03_parameter_derivation.qmd](03_parameter_derivation.qmd)
+
+Convert EwE parameters to mizer parameters and assess their biological and ecological reasonableness:
+
+- Derive size-at-maturity (`w_mat`) and maximum size (`w_inf`) from EwE data
+- Estimate growth parameters (von Bertalanffy K, h, ks)
+- Calculate mortality rates (background mortality `z0`, fishing mortality)
+- Derive size-based feeding parameters (beta, sigma)
+- Set reproduction parameters (R_max, erepro)
+- Create species parameter data frame
+
+**Key conversions**:
+
+- EwE biomass → mizer initial abundances
+- EwE P/B and Q/B → mizer growth and feeding rates
+- EwE diet matrix → mizer interaction matrix
+
+## Step 4: Resource Spectrum Parameterization {#sec-resource-spectrum}
+
+**Document**: [04_resource_spectrum.qmd](04_resource_spectrum.qmd)
+
+Set up the resource spectrum representing primary producers and zooplankton:
+
+- Define resource size spectrum parameters (kappa, lambda)
+- Incorporate plankton forcing from ISIMIP3a climate data
+- Set up time-varying resource dynamics linking to phytoplankton and zooplankton data
+- Validate resource spectrum against EwE primary production
+
+**Data sources**:
+
+- `gfdl-mom6-cobalt2_obsclim_phydiat-vint_*.csv` (diatoms)
+- `gfdl-mom6-cobalt2_obsclim_phydiaz-vint_*.csv` (diazotrophs)
+- `gfdl-mom6-cobalt2_obsclim_phypico-vint_*.csv` (picophytoplankton)
+- `gfdl-mom6-cobalt2_obsclim_zmicro-vint_*.csv` (microzooplankton)
+- `gfdl-mom6-cobalt2_obsclim_zmeso-vint_*.csv` (mesozooplankton)
+
+## Step 5: Interaction Matrix Calibration {#sec-interaction-matrix}
+
+**Document**: [05_interaction_matrix.qmd](05_interaction_matrix.qmd)
+
+Calibrate the predator-prey interaction matrix:
+
+- Translate EwE diet composition to size-based preferences
+- Set interaction matrix based on diet data
+- Account for size-based feeding preferences
+- Incorporate predator-prey size ratios (PPMR)
+- Validate against EwE diet composition
+
+## Step 6: Initial Model Setup and Steady State {#sec-initial-setup}
+
+**Document**: [06_initial_setup.qmd](06_initial_setup.qmd)
+
+Create the initial mizer model and find steady state:
+
+- Assemble all parameters into `MizerParams` object
+- Set initial abundances based on EwE biomass
+- Run model to steady state (if applicable)
+- Check mass balance and energy conservation
+- Initial validation against EwE equilibrium state
+
+## Step 7: Model Calibration and Tuning {#sec-calibration}
+
+**Document**: [07_calibration.qmd](07_calibration.qmd)
+
+Calibrate the model to match historical data:
+
+- Define calibration period (e.g., 1961-2010)
+- Set up fishing mortality from ISIMIP3a fishing effort data
+- Incorporate environmental forcing (temperature, sea ice, plankton)
+- Tune parameters to match observed catches and biomass trends
+- Use catch data from ISIMIP3a calibration files
+
+**Data sources**:
+
+- `calibration_catch_histsoc_1850_2017_western-antarctic-peninsula.parquet`
+- `effort_histsoc_1841_2017_western-antarctic-peninsula.parquet`
+- Temperature forcing: `gfdl-mom6-cobalt2_obsclim_tob_*.csv`, `*_tos_*.csv`
+- Sea ice forcing: `gfdl-mom6-cobalt2_obsclim_siconc_*.csv`
+
+## Step 8: Environmental Forcing Implementation {#sec-forcing}
+
+**Document**: [08_environmental_forcing.qmd](08_environmental_forcing.qmd)
+
+Implement time-varying environmental forcing following FishMIP protocols:
+
+- Temperature effects on metabolism and growth
+- Sea ice effects on habitat availability
+- Plankton forcing on resource spectrum
+- Standardize forcing data to model time steps
+- Create forcing functions for simulations
+
+## Step 9: Fishing Scenarios Implementation {#sec-fishing-scenarios}
+
+**Document**: [09_fishing_scenarios.qmd](09_fishing_scenarios.qmd)
+
+Implement fishing scenarios following ISIMIP3a protocols:
+
+- Historical fishing scenario (`histsoc`: 1850-2017)
+- No-fishing scenario baseline
+- Future fishing scenarios (if applicable)
+- Implement size-selective fishing mortality
+- Match fishing effort to species/functional groups
+
+## Step 10: Model Simulations {#sec-simulations}
+
+**Document**: [10_simulations.qmd](10_simulations.qmd)
+
+Run model simulations following FishMIP conventions:
+
+- Spin-up period setup
+- Historical simulation (1961-2010 or 1850-2017)
+- Extract outputs in FishMIP format
+- Save time series of biomass, catches, and ecosystem indicators
+- Compare with Dahood et al. (2019) Ecosim simulations
+
+## Step 11: Model Validation and Diagnostics {#sec-validation}
+
+**Document**: [11_validation.qmd](11_validation.qmd)
+
+Validate the model following ISIMIP and FishMIP guidance:
+
+### Validation Plots
+
+- Time series comparisons (biomass, catches)
+- Size spectra by species and community
+- Diet composition matrices
+- Growth curves
+- Mortality schedules
+- Fishing mortality by species
+
+### Skill Metrics
+
+- Model Efficiency (MEF)
+- Root Mean Square Error (RMSE)
+- Normalized RMSE
+- Correlation coefficients
+- Bias metrics
+- Reliability Index (RI)
+
+### Comparison with EwE
+
+- Biomass trajectories
+- Catch trends
+- Ecosystem indicators (e.g., total biomass, mean trophic level)
+- Response to forcing variables
+
+## Step 12: Ecosystem Indicators {#sec-indicators}
+
+**Document**: [12_ecosystem_indicators.qmd](12_ecosystem_indicators.qmd)
+
+Calculate and analyze ecosystem indicators:
+
+- Total biomass by functional group/trophic level
+- Mean trophic level of catches
+- Biomass spectra (Sheldon spectrum)
+- Productivity metrics
+- Size-based indicators
+- Compare with FishMIP indicator requirements
+
+## Step 13: Sensitivity Analysis {#sec-sensitivity}
+
+**Document**: [13_sensitivity_analysis.qmd](13_sensitivity_analysis.qmd)
+
+Conduct sensitivity analysis on key parameters:
+
+- Identify key uncertain parameters
+- Parameter perturbation experiments
+- Assess output sensitivity
+- Quantify uncertainty in projections
+- Document parameter uncertainty ranges
+
+## Step 14: Results Summary and Comparison {#sec-results}
+
+**Document**: [14_results_summary.qmd](14_results_summary.qmd)
+
+Synthesize results and compare with original EwE model:
+
+- Summary of model performance
+- Key differences between mizer and EwE results
+- Strengths and limitations of the translation
+- Insights gained from size-based approach
+- Recommendations for model use and future development
+
+# Data Files Reference
+
+## Input Data
+
+### Dahood et al. (2019) EwE Files
+
+Located in `Input_Files/EwE_files/`:
+
+- `Dahood WAP -Basic input.csv`: Species parameters, biomass, P/B, Q/B
+- `Dahood WAP -Diet composition.csv`: Diet matrix
+- `Dahood WAP -Fishing effort functions grid.csv`: Fishing effort time series
+- `Dahood WAP -Fishing mortality functions grid.csv`: Fishing mortality
+- `Dahood WAP -Forcing functions grid.csv`: Environmental forcing
+- `Dahood WAP -Time series grid.csv`: Observed time series
+
+### ISIMIP3a Climate Forcing
+
+Located in `Input_Files/ISIMIP3a_climate_forcing_inputs/`:
+
+- **Plankton**: `phydiat-vint`, `phydiaz-vint`, `phypico-vint`, `zmicro-vint`, `zmeso-vint`
+- **Temperature**: `tob` (bottom), `tos` (surface)
+- **Sea Ice**: `siconc` (concentration)
+- **Grid Cell Area**: `areacello`
+
+### ISIMIP3a Fishing Data
+
+Located in `Input_Files/ISIMIP3a_fishing_forcing_inputs/`:
+
+- `effort_histsoc_1841_2017_western-antarctic-peninsula.parquet`
+- `effort_dictionary.parquet`
+
+### ISIMIP3a Calibration Data
+
+Located in `Input_Files/ISIMIP3a_calibration_data/`:
+
+- `calibration_catch_histsoc_1850_2017_western-antarctic-peninsula.parquet`
+- `catch_dictionary.parquet`
+
+# Software Requirements
+
+```r
+# Core packages
+library(mizer)
+library(mizerExperimental)  # If needed for advanced features
+
+# Data manipulation
+library(tidyverse)
+library(arrow)  # For reading parquet files
+
+# Plotting
+library(ggplot2)
+library(patchwork)
+
+# Additional utilities
+library(here)
+library(lubridate)
+```
+
+# Project Timeline
+
+- [x] Data sourcing (Dahood et al. 2019 and ISIMIP3a data)
+- [x] Data extraction and preparation
+- [ ] Model structure design
+- [ ] Parameter conversion
+- [ ] Initial model setup
+- [ ] Calibration
+- [ ] Validation
+- [ ] Simulations
+- [ ] Results analysis
+
+---

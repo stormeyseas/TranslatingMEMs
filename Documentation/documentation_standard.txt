@@ -1,0 +1,427 @@
+================================================================================
+DOCUMENTATION STANDARDS FOR TRANSLATING MEMS PROJECT
+================================================================================
+Last Updated: 2026-01-14
+Purpose: Ensure consistency across all Quarto documentation files
+
+================================================================================
+1. DOCUMENT STRUCTURE
+================================================================================
+
+1.1 YAML Header
+---------------
+All documents must include:
+- title: "Step X: [Title]"
+- subtitle: "Translation of Dahood et al. (2019) EwE Model"
+- author: List including "Tormey Reimer" and "Claude Sonnet 4.5"
+- date: last-modified
+- bibliography: references.bib (if references are used)
+
+Example:
+---
+title: "Step 3: Parameter Derivation and Conversion"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author: 
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+1.2 Navigation Links
+--------------------
+MANDATORY: Add navigation links to create a connected document flow
+
+At the TOP of document (after YAML, before first section):
+[← Previous: [Title]]([filename].qmd)
+
+At the BOTTOM of document (after References section, right-aligned):
+[Next: [Title] →]([filename].qmd)
+
+Example:
+[← Previous: Model Structure](02_model_structure.qmd)
+[Next: Resource Spectrum →](04_resource_spectrum.qmd)
+
+1.3 Section Structure
+---------------------
+Required sections in order:
+1. Navigation link (top)
+2. Overview section
+3. Main content sections
+4. References section (if applicable)
+5. Navigation link (bottom)
+
+DO NOT INCLUDE:
+- "Next Steps" sections
+- Future work that belongs in later documents
+- Status notes like "Document Status: Complete"
+
+================================================================================
+2. CODE CHUNKS
+================================================================================
+
+2.1 Chunk Labels
+----------------
+ALL code chunks MUST have unique labels using the format:
+#| label: descriptive-name
+
+Naming conventions:
+- Use lowercase with hyphens (kebab-case)
+- Be descriptive and specific
+- Use prefixes for special chunk types
+
+Required prefixes:
+- fig- : For chunks that generate figures/plots
+- tbl- : For chunks that generate tables
+- No prefix needed for setup, data loading, calculations
+
+Examples:
+#| label: fig-biomass-comparison
+#| label: tbl-species-summary
+#| label: load-data
+#| label: calculate-parameters
+
+2.2 Code Summaries
+------------------
+ALL code chunks MUST include a code-summary attribute:
+#| code-summary: "Brief description of what this code does"
+
+Purpose: Provides collapsible code blocks with informative descriptions
+
+Examples:
+#| code-summary: "Load packages and set plot themes"
+#| code-summary: "Source R script for parameter derivation"
+#| code-summary: "Calculate and plot size ratios"
+
+2.3 Captions
+------------
+MANDATORY for figure-generating chunks:
+#| fig-cap: "Descriptive caption for the figure"
+
+MANDATORY for table-generating chunks:
+#| tbl-cap: "Descriptive caption for the table"
+
+Examples:
+#| fig-cap: "Species body size ranges and distribution of size parameters"
+#| tbl-cap: "Summary of species parameters by category"
+
+2.4 Common Chunk Options
+-------------------------
+Setup chunks:
+#| label: setup
+#| include: false
+#| code-summary: "Load packages and documentation helper functions"
+
+Script sourcing chunks:
+#| label: source-script
+#| code-summary: "Source R script for [description]"
+#| output: false
+
+Example code (for illustration, not executed):
+#| label: example-name
+#| eval: false
+#| echo: true
+#| code-summary: "Example code for [purpose] (for illustration)"
+
+================================================================================
+3. SOURCING R SCRIPTS
+================================================================================
+
+3.1 Script Execution Location
+------------------------------
+R scripts related to the documentation MUST be sourced:
+- AFTER the Overview section
+- BEFORE the main content that uses the generated data
+
+3.2 Script Sourcing Pattern
+----------------------------
+Use the doc_functions.R helper:
+
+```{r}
+#| label: source-script-name
+#| code-summary: "Source R script for [specific purpose]"
+#| output: false
+
+# Run the script
+source_model_script("script_name.R")
+```
+
+Example:
+```{r}
+#| label: source-parameter-script
+#| code-summary: "Source R script for parameter derivation"
+#| output: false
+
+source_model_script("01_derive_species_parameters.R")
+```
+
+================================================================================
+4. FIGURES AND TABLES
+================================================================================
+
+4.1 Figure References
+---------------------
+MANDATORY: All figures must use Quarto's cross-referencing system
+
+When including figures:
+![Alt text](path/to/figure.png){#fig-label}
+
+Reference in text BEFORE the chunk which generates the plot using:
+@fig-label
+
+Example:
+![Species body size ranges](../Models/AI-assisted/Attempt 1/plot.png){#fig-size-ranges}
+
+In text: "As shown in @fig-size-ranges, marine mammals have narrow size ranges..."
+
+4.2 Table References
+--------------------
+For tables generated by code chunks, the label serves as the reference:
+#| label: tbl-species-summary
+
+Reference in text BEFORE the chunk which generates the table using:
+@tbl-species-summary
+
+Example:
+@tbl-species-summary shows the distribution of species across categories.
+
+4.3 Multiple Figures in Single Chunk
+-------------------------------------
+If a chunk generates multiple figures, reference the whole chunk:
+@fig-comparison shows three aspects of the analysis.
+
+================================================================================
+5. CROSS-REFERENCES
+================================================================================
+
+5.1 Internal Document References
+---------------------------------
+Link to other documentation files:
+[Step X: Title](XX_filename.qmd)
+
+Link to specific sections using anchors defined in index.qmd:
+[Step X](XX_filename.qmd)
+
+Examples:
+[Step 2](02_model_structure.qmd)
+[Step 3: Parameter Derivation](03_parameter_derivation.qmd)
+
+5.2 File Path References
+-------------------------
+When referencing code or data files:
+[`path/to/file.R`](../path/to/file.R)
+
+Example:
+The script [`01_derive_species_parameters.R`](../Models/AI-assisted/Attempt 1/01_derive_species_parameters.R) generates the parameters.
+
+5.3 Citations
+-------------
+Use BibTeX format in references.bib and cite using:
+@author2019 or [@author2019]
+
+Example:
+Based on @dahood2019, we...
+The model [@dahood2019; @blanchard2017] shows...
+
+================================================================================
+6. CONTENT SCOPE
+================================================================================
+
+6.1 Document Focus
+------------------
+Each document should be SELF-CONTAINED as much as possible and focused on its specific step.
+
+INCLUDE:
+- Overview of the current step
+- Methodology and approach for THIS step
+- Results and outputs from THIS step
+- Assessment of results from THIS step
+
+DO NOT INCLUDE:
+- "Next Steps" sections listing future work
+- Detailed descriptions of what will happen in later steps
+- Placeholder text like "to be filled after execution"
+
+6.2 Forward References
+-----------------------
+When referencing future steps, keep it minimal and in context:
+
+GOOD: "These values are initial estimates that will be tuned during model 
+calibration to match observed biomass and population dynamics."
+
+BAD: "Next Steps: 1. Run calibration script 2. Adjust parameters 3. ..."
+
+6.3 Appropriate Forward Mentions
+---------------------------------
+It's acceptable to mention future steps when:
+- Explaining why a parameter is set a certain way (will be calibrated later)
+- Noting where a feature will be implemented (in Step X)
+- Referencing where to find more detail: ([Step X](0X_file.qmd))
+
+Always link to the specific step using cross-references.
+
+================================================================================
+7. FORMATTING CONVENTIONS
+================================================================================
+
+7.1 Callout Blocks
+------------------
+Use Quarto callout blocks for important notes:
+
+::: {.callout-note}
+## Title (optional)
+Content here
+:::
+
+Types: note, warning, important, tip, caution
+
+Example:
+::: {.callout-important}
+## Implementation Decision
+Time-varying capacity will be implemented in later calibration steps.
+:::
+
+7.2 Mathematics
+---------------
+Use LaTeX math notation:
+- Inline: $x = y$
+- Display: $$x = \frac{a}{b}$$
+
+7.3 Code vs Results
+-------------------
+Distinguish between:
+- Example/illustration code: eval: false, echo: true
+- Code that actually runs: No eval specification or eval: true
+- Setup code: include: false
+
+7.4 Lists and Tables
+--------------------
+Use markdown tables for simple data:
+| Column 1 | Column 2 |
+|----------|----------|
+| Data     | Data     |
+
+Use R code chunks with kable() for dynamic tables.
+
+================================================================================
+8. FILE ORGANIZATION
+================================================================================
+
+8.1 File Naming
+---------------
+Convention: ##_descriptive_name.qmd
+- ## = two-digit step number
+- Use underscores for spaces
+- Use descriptive, not generic names
+
+Examples:
+- 03_parameter_derivation.qmd (GOOD)
+- 03_parameters.qmd (TOO GENERIC)
+- 03_1_assessment.qmd (AVOID SUBSTEP NUMBERS - consolidate instead)
+
+8.2 Consolidation Policy
+-------------------------
+Avoid creating substep documents (e.g., 03_1, 03_2). Instead:
+- Consolidate related content into a single comprehensive document
+- Use sections and subsections for organization
+- Delete old substep files after consolidation
+
+================================================================================
+9. QUALITY CHECKLIST
+================================================================================
+
+Before finalizing any document, verify:
+
+[ ] YAML header is complete with all required fields
+[ ] Navigation links present at top and bottom
+[ ] All code chunks have unique labels
+[ ] All code chunks have code-summary attributes
+[ ] Figure chunks have fig- prefix and fig-cap
+[ ] Table chunks have tbl- prefix and tbl-cap
+[ ] All figures referenced in text using @fig-label
+[ ] All tables referenced in text using @tbl-label
+[ ] R scripts sourced at beginning (after Overview)
+[ ] No "Next Steps" or "Future Work" sections
+[ ] No placeholder text or "to be filled" notes
+[ ] Cross-references use proper Quarto syntax
+[ ] File paths use relative links
+[ ] Document is self-contained and focused on its step
+
+================================================================================
+10. EXAMPLE TEMPLATE
+================================================================================
+
+---
+title: "Step X: [Title]"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author: 
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+[← Previous: [Previous Title]]([previous_file].qmd)
+
+```{r}
+#| label: setup
+#| include: false
+#| code-summary: "Load packages and documentation helper functions"
+
+library(tidyverse)
+source("doc_functions.R")
+```
+
+```{r}
+#| label: source-analysis-script
+#| code-summary: "Source R script for [specific analysis]"
+#| output: false
+
+source_model_script("XX_script_name.R")
+```
+
+# Overview
+
+Brief overview of this step, its purpose, and what will be covered.
+
+# Main Content Section
+
+Detailed content with subsections as needed.
+
+## Subsection with Figure
+
+```{r}
+#| label: fig-example-plot
+#| fig-cap: "Description of what this figure shows"
+#| code-summary: "Generate example visualization"
+
+# Code to create plot
+```
+
+As shown in @fig-example-plot, the analysis reveals...
+
+## Subsection with Table
+
+```{r}
+#| label: tbl-summary-stats
+#| tbl-cap: "Summary statistics by category"
+#| code-summary: "Calculate and display summary statistics"
+
+# Code to create table
+kable(summary_data)
+```
+
+@tbl-summary-stats presents the key findings...
+
+# References
+
+::: {#refs}
+:::
+
+---
+
+[Next: [Next Title] →]([next_file].qmd)
+
+================================================================================
+END OF DOCUMENTATION STANDARDS
+================================================================================

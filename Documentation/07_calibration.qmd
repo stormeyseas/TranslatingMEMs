@@ -1,0 +1,53 @@
+---
+title: "Step 7: Model Calibration and Tuning"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author:
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# Source documentation helper functions
+source("doc_functions.R")
+```
+
+::: {.callout-important}
+## Remember: Time-Varying Resource Capacity
+
+During calibration, consider activating the time-varying resource capacity that was prepared in Step 4 (Resource Spectrum Parameterization).
+
+The resource capacity can be scaled by ISIMIP plankton forcing data (zmicro + zmeso) to incorporate environmental variability:
+
+```r
+# Load resource parameters
+resource_params <- readRDS("Models/AI-assisted/Attempt 1/resource_params.rds")
+
+# Extract time series
+capacity_ts <- resource_params$capacity$time_series
+
+# Create time-varying capacity function
+resource_capacity_fn <- function(params, t, ...) {
+  time_idx <- which.min(abs(capacity_ts$time - t))
+  scaling <- capacity_ts$scaling_factor[time_idx]
+  return(resource_params$kappa * scaling)
+}
+
+# Apply to params
+params <- setResource(params,
+                     resource_capacity = resource_capacity_fn,
+                     resource_rate = resource_params$r_pp)
+```
+
+This can help:
+1. Match temporal variation in observations
+2. Incorporate climate-driven resource dynamics
+3. Test model sensitivity to environmental forcing
+
+See [`Documentation/04_resource_spectrum.qmd`](04_resource_spectrum.qmd) for details on the parameterization and [`Models/AI-assisted/Attempt 1/02_resource_spectrum.R`](../Models/AI-assisted/Attempt 1/02_resource_spectrum.R) for the implementation.
+:::
+

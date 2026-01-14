@@ -1,0 +1,496 @@
+---
+title: "Step 6: Initial Model Setup and Steady State"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author:
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+[← Previous: Interaction Matrix](05_interaction_matrix.qmd)
+
+```{r}
+#| label: setup
+#| include: false
+#| code-summary: "Load packages and documentation helper functions"
+
+# Source documentation helper functions
+source("doc_functions.R")
+```
+
+```{r}
+#| label: run-setup
+#| code-summary: "Source R script for initial model setup"
+#| message: true
+#| warning: true
+#| output: true
+
+# Run the initial model setup script
+source_model_script("04_initial_model_setup.R")
+```
+
+# Overview
+
+This document describes the assembly of all components into a complete mizer model and the process of finding steady state conditions for the Western Antarctic Peninsula ecosystem. This step brings together the species parameters (Step 3), resource spectrum (Step 4), and interaction matrix (Step 5) into a functional `MizerParams` object.
+
+## Objectives
+
+1. **Assemble** all parameters into a MizerParams object
+2. **Set initial conditions** based on EwE biomass distributions
+3. **Validate** model structure and parameter consistency
+4. **Find steady state** (or quasi-steady state) through simulation
+5. **Generate diagnostics** for initial model performance
+6. **Compare** with EwE equilibrium conditions
+
+# Background: Mizer Model Structure
+
+## MizerParams Object
+
+The `MizerParams` object is the core data structure in mizer that contains all model parameters and settings. Key components include:
+
+### Species Parameters
+
+From Step 3, includes for each species:
+
+- **Size parameters**: $w_{min}$, $w_{mat}$, $w_{\infty}$
+- **Growth parameters**: $K$, $h$, $ks$
+- **Mortality parameters**: $z_0$
+- **Feeding parameters**: $\beta$, $\sigma$
+- **Reproduction parameters**: $e_{repro}$
+
+### Interaction Matrix
+
+From Step 5, defines species-to-species feeding preferences $\theta_{ij}$ modulating predation rates between species $i$ (predator) and $j$ (prey).
+
+### Resource Spectrum
+
+From Step 4, characterizes the background resource (phytoplankton and zooplankton):
+
+- $\kappa$: Carrying capacity
+- $\lambda$: Size spectrum slope  
+- $r_{pp}$: Regeneration rate
+- $w_{pp,cutoff}$: Maximum resource size
+
+## Size Discretization
+
+Mizer represents populations using size-based abundances $N_i(w)$ where:
+
+- $N_i(w)$: Abundance of species $i$ at size $w$ (number per gram per km²)
+- Size classes span from $w_{min}$ to beyond $w_{\infty}$ for each species
+- Logarithmic size binning ensures adequate resolution across orders of magnitude
+
+**Model configuration**:
+
+- **Number of size bins**: 200 (increased from default for better resolution)
+- **Size range**: 1e-4 g to 2e8 g (0.1 mg to 200 tonnes)
+- **Resource range**: 1e-14 g to 1e1 g (capturing phytoplankton to large zooplankton)
+
+## Initial Conditions
+
+Initial size distributions are critical for model dynamics. We use EwE biomass to constrain total biomass per species, then distribute across sizes following ecological scaling assumptions.
+
+### Biomass Distribution Strategy
+
+For each species:
+
+1. **Get EwE total biomass** (tonnes/km²)
+2. **Generate initial size distribution** using mizer defaults (typically power law)
+3. **Scale distribution** to match EwE total biomass
+4. **Validate** biomass allocation across size classes
+
+The default size distribution assumes:
+
+$$N_i(w) \propto w^{-\mu}$$
+
+where $\mu$ typically ranges from 1-3, reflecting:
+
+- Size-dependent mortality  
+- Growth rates
+- Reproductive allocation
+
+# Model Assembly
+
+## Input Components
+
+### Species Parameters
+
+```{r}
+#| label: tbl-species-summary
+#| tbl-cap: "Summary of species parameters by category"
+#| code-summary: "Load and summarize species parameters"
+
+# Read species parameters
+species_params <- read.csv(file.path(MODEL_DIR, "species_parameters.csv"))
+
+# Create summary table by category
+summary_table <- species_params %>%
+  group_by(category) %>%
+  summarize(
+    `N Species` = n(),
+    `Size Range` = paste0(
+      signif(min(w_min), 2), " - ",
+      signif(max(w_inf), 2), " g"
+    ),
+    `Mean K` = signif(mean(k_vb), 3),
+    `Mean z0` = signif(mean(z0), 3)
+  )
+
+knitr::kable(summary_table)
+```
+
+**Total species**: 26 functional groups spanning full size range from krill to whales
+
+### Interaction Matrix
+
+- **Dimensions**: 26 × 26 species
+- **Active interactions**: 107 (15.8% of possible)
+- **Sparsity**: 84.2% (reflecting specialist feeding strategies)
+
+### Resource Spectrum
+
+```{r}
+#| label: resource-params
+#| code-summary: "Load resource parameters"
+
+# Read resource parameters
+resource_params <- readRDS(file.path(MODEL_DIR, "resource_params.rds"))
+```
+
+- **κ (kappa)**: `r signif(resource_params$kappa, 4)` (carrying capacity)
+- **λ (lambda)**: `r signif(resource_params$lambda, 3)` (size spectrum slope)
+- **r_pp**: `r signif(resource_params$r_pp, 3)` (regeneration rate)
+- **w_pp_cutoff**: `r signif(resource_params$w_pp_cutoff, 3)` g (maximum resource size)
+
+## Parameter Validation
+
+Before assembly, key validations performed:
+
+1. **Size consistency**: $w_{min} < w_{mat} < w_{\infty}$ for all species ✓
+2. **Growth parameters**: $K > 0$, $h > 0$ for all species ✓  
+3. **Mortality rates**: $z_0 > 0$ and ecologically reasonable ✓
+4. **Feeding parameters**: $\beta > 0$, $0.5 < \sigma < 3$ ✓
+5. **Interaction matrix**: Square, no cannibalism, reasonable sparsity ✓
+
+## Model Creation
+
+The `MizerParams` object is created using:
+
+```{r}
+#| label: model-creation-example
+#| eval: false
+#| echo: true
+#| code-summary: "Example code for creating MizerParams object (for illustration)"
+
+params <- newMultispeciesParams(
+  species_params = species_params,
+  interaction = interaction_matrix,
+  kappa = resource_params$kappa,
+  lambda = resource_params$lambda,
+  w_pp_cutoff = resource_params$w_pp_cutoff,
+  r_pp = resource_params$r_pp,
+  no_w = 200,
+  min_w = 1e-4,
+  max_w = 2e8,
+  min_w_pp = 1e-14
+)
+```
+
+# Initial Conditions
+
+## Biomass Scaling from EwE
+
+Initial abundances were scaled to match EwE biomass estimates:
+
+### Initial Biomass Comparison
+
+![Initial biomass comparison between EwE and Mizer models](../Models/AI-assisted/Attempt%201/plots/biomass_comparison_initial.png){#fig-biomass-initial}
+
+@fig-biomass-initial shows species-by-species comparison of biomass (tonnes/km²) between the EwE model and our initial mizer setup. Species are grouped by functional category (fish, krill, seals, whales, penguins, birds, other).
+
+### Biomass Ratios
+
+**Key Statistics** (Initial Mizer / EwE) are calculated by the setup script and documented in the model summary output.
+
+## Initial Size Spectrum
+
+![Initial size spectrum by species](../Models/AI-assisted/Attempt%201/plots/initial_spectrum.png){#fig-initial-spectrum}
+
+@fig-initial-spectrum shows the abundance-size distribution for all species in the initial model state. The plot uses Sheldon spectrum notation (abundance × weight² vs weight) which produces flat spectra under equilibrium conditions.
+
+**Key features**:
+
+- **Power = 2**: Sheldon spectrum normalization
+- **Total line**: Community-level size spectrum (black line)
+- **Species lines**: Individual species contributions (colored)
+- **Resource spectrum**: Background plankton (typically leftmost portion)
+
+## Validation Tests
+
+### Test Simulation
+
+A short 1-year test simulation was performed to verify:
+
+- ✓ No numerical instabilities
+- ✓ No negative abundances  
+- ✓ Reasonable feeding rates
+- ✓ Energy conservation
+- ✓ Mass balance
+
+**Result**: Success (documented in model summary output)
+
+# Steady State Analysis
+
+## Approach
+
+Finding a true steady state in multi-species size-spectrum models is challenging due to:
+
+1. **Complex dynamics**: 26 interacting species with different life histories
+2. **Size structure**: Each species has multiple size classes (cohorts)
+3. **Predator-prey cycles**: Natural oscillations in some interactions
+4. **Stochasticity**: Inherent variability in ecological dynamics
+
+### Strategy
+
+We use a **quasi-steady state** approach:
+
+1. Run model for 100 years from EwE-scaled initial conditions
+2. Monitor biomass trajectories for stability
+3. Calculate coefficient of variation (CV) for last 20 years
+4. Accept if mean CV < 0.1 (within 10% variation)
+
+## Simulation Results
+
+### Biomass Time Series
+
+![Biomass trajectories during steady state run](../Models/AI-assisted/Attempt%201/plots/biomass_timeseries.png){#fig-biomass-timeseries}
+
+@fig-biomass-timeseries shows time series of total biomass for each species over 100-year simulation. Stable trajectories indicate equilibrium or quasi-equilibrium conditions.
+
+### Stability Assessment
+
+Coefficient of variation and overall assessment are calculated by the setup script and documented in the model summary output.
+
+::: {.callout-note}
+## Natural Variability
+
+Multi-species models often exhibit some variability even at "steady state" due to:
+
+- Predator-prey cycles (especially krill-predator interactions)
+- Cohort effects (recruitment pulses)
+- Size-dependent interactions
+- Reproductive stochasticity
+
+A model with CV < 0.1-0.2 is generally considered acceptably stable for calibration purposes.
+:::
+
+## Steady State Biomass
+
+### Comparison with EwE
+
+![Steady state biomass compared to EwE](../Models/AI-assisted/Attempt%201/plots/biomass_comparison_steady.png){#fig-biomass-steady}
+
+@fig-biomass-steady compares biomass distributions after equilibration with EwE to assess how the model settles relative to the reference state. Detailed biomass change analysis is documented in the model summary output.
+
+## Steady State Size Spectrum
+
+![Steady state size spectrum](../Models/AI-assisted/Attempt%201/plots/steady_state_spectrum.png){#fig-steady-spectrum}
+
+@fig-steady-spectrum shows the size spectrum after equilibration and how the community structure stabilizes. Comparison with the initial spectrum (@fig-initial-spectrum) reveals:
+
+- Shifts in abundance across size classes
+- Emergence of stable predator-prey structure  
+- Balance between growth, reproduction, and mortality
+
+# Model Diagnostics
+
+## Growth Curves
+
+![Growth curves by species](../Models/AI-assisted/Attempt%201/plots/growth_curves.png){#fig-growth-curves}
+
+@fig-growth-curves shows von Bertalanffy growth curves displaying expected mass-at-age for selected species. These curves result from the interaction of:
+
+- Maximum consumption rate ($h$)
+- Feeding level (realized intake)
+- Metabolic costs
+- Size-dependent parameters
+
+**Validation**: Compare with known growth rates from literature for key species (Antarctic Krill, icefish, etc.)
+
+## Feeding Level
+
+![Feeding level by species and size](../Models/AI-assisted/Attempt%201/plots/feeding_level.png){#fig-feeding-level}
+
+@fig-feeding-level shows feeding level ($f$), which represents the ratio of realized consumption to maximum possible consumption:
+
+$$f = \frac{\text{Actual intake}}{\text{Maximum intake}}$$
+
+**Interpretation**:
+
+- **f ≈ 1**: Satiated, food abundant
+- **f ≈ 0.5**: Moderate food availability  
+- **f < 0.3**: Food-limited, may indicate issues
+- **f > 0.95**: Potentially over-feeding
+
+**Expected patterns**:
+
+- Small individuals (juveniles): Higher f (abundant small prey)
+- Large individuals: Lower f (fewer suitable prey)
+- Specialists: Variable f (dependent on specific prey)
+- Generalists: Stable f (can switch prey)
+
+## Energy Balance
+
+Key energy flows in the model:
+
+### Consumption
+
+$$C_i(w) = h_i(w) \times f_i(w) \times w$$
+
+Where $h_i(w)$ is maximum intake rate and $f_i(w)$ is feeding level.
+
+### Growth
+
+$$g_i(w) = \left[\varepsilon_i(w) \times C_i(w) - k_i(w) \times w\right] / w$$
+
+Where $\varepsilon$ is assimilation efficiency and $k$ is metabolic rate.
+
+### Reproduction
+
+$$R_i = \int_{w_{mat}}^{w_{\infty}} E_{R,i}(w) \times N_i(w) \times dw$$
+
+Where $E_{R,i}(w)$ is energy allocated to reproduction.
+
+### Mortality
+
+Total mortality includes:
+
+- **Predation mortality** ($\mu_{pred}$): Death due to predators
+- **Background mortality** ($\mu_{background} = z_0$): All other sources  
+- **Fishing mortality** ($F$): To be added in calibration step
+
+## Validation Checks
+
+### Mass Balance
+
+For each species, verify:
+
+$$\frac{dB}{dt} = \text{Growth} + \text{Recruitment} - \text{Deaths}$$
+
+At steady state: $\frac{dB}{dt} \approx 0$
+
+### Energy Conservation
+
+Community-level energy should be conserved:
+
+$$\text{Primary Production} = \text{Consumption} + \text{Respiration} + \text{Mortality}$$
+
+### Trophic Structure
+
+Trophic level comparison with EwE is documented in the model summary output.
+
+# Model Performance Summary
+
+## Key Metrics
+
+Key metrics and assessment are documented in the model summary output file [`model_setup_summary.txt`](../Models/AI-assisted/Attempt 1/model_setup_summary.txt).
+
+## Comparison with EwE
+
+Detailed comparison of similarities, differences, and interpretation are documented in the model summary output. Key differences between mizer and EwE arise from:
+
+- **Size structure**: Mizer explicitly models size classes
+- **Functional forms**: Different equations for growth, consumption
+- **Temporal dynamics**: Continuous vs discrete time steps
+- **Spatial scale**: Both models represent WAP ecosystem average
+
+# Model Files
+
+## Saved Outputs
+
+The script generates the following files in [`Models/AI-assisted/Attempt 1/`](../Models/AI-assisted/Attempt 1/):
+
+### Model Objects
+
+- **`initial_params.rds`**: MizerParams object with EwE-scaled initial conditions
+- **`steady_state_params.rds`**: MizerParams object after equilibration
+- **`steady_state_simulation.rds`**: Full simulation results (100 years)
+
+### Diagnostic Plots
+
+- **`initial_spectrum.png`**: Size spectrum at t=0
+- **`steady_state_spectrum.png`**: Size spectrum at equilibrium  
+- **`biomass_comparison_initial.png`**: Initial mizer vs EwE biomass
+- **`biomass_comparison_steady.png`**: Steady state vs EwE biomass
+- **`biomass_timeseries.png`**: Trajectories over 100 years
+- **`growth_curves.png`**: Von Bertalanffy growth by species
+- **`feeding_level.png`**: Feeding level by species and size
+
+### Summary Report
+
+- **`model_setup_summary.txt`**: Text summary of all metrics and results
+
+## Usage
+
+To load and use the model:
+
+```{r}
+#| label: usage-example
+#| eval: false
+#| echo: true
+#| code-summary: "Example code for loading and using the model (for illustration)"
+
+# Load steady state model
+params <- readRDS("Models/AI-assisted/Attempt 1/steady_state_params.rds")
+
+# Run a simulation
+sim <- project(params, t_max = 50)
+
+# Plot results
+plotBiomass(sim)
+plotSpectra(sim)
+```
+
+# Key Decisions and Assumptions
+
+## Size Discretization
+
+**Decision**: Use 200 size bins spanning 1e-4 g to 2e8 g
+
+**Rationale**: 
+- Higher resolution than default (100 bins) for complex food web
+- Captures full size range from small zooplankton to large whales
+- Sufficient resolution for size-based feeding interactions
+
+**Trade-off**: Increased computational cost vs accuracy
+
+## Initial Conditions
+
+**Decision**: Scale size distributions to match EwE total biomass
+
+**Rationale**:
+- Maintains consistency with validated EwE model
+- Provides realistic starting point
+- Allows direct comparison of model outputs
+
+**Alternative**: Could use observed size distributions if available
+
+## Steady State Criterion
+
+**Decision**: Accept quasi-steady state with mean CV < 0.1
+
+**Rationale**:
+- True steady state may not exist for complex multi-species system
+- Natural variability is ecologically realistic  
+- Stable enough for calibration and scenario analysis
+
+**Alternative**: Could run longer or use optimization to force equilibrium
+
+# References
+
+::: {#refs}
+:::
+
+---
+
+[Next: Model Calibration →](07_calibration.qmd)

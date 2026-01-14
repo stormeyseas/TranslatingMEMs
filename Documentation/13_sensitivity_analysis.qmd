@@ -1,0 +1,17 @@
+---
+title: "Step 13: Sensitivity Analysis"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author: 
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# Source documentation helper functions
+source("doc_functions.R")
+```

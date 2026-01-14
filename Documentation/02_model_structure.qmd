@@ -1,0 +1,798 @@
+---
+title: "Step 2: Mizer Model Structure and Conceptual Design"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author:
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+---
+
+[← Previous: Overview](index.qmd)
+
+# Overview
+
+This document details the conceptual design and structural decisions for translating the Dahood et al. (2019) Ecopath with Ecosim (EwE) model of the Western Antarctic Peninsula ecosystem into a size-based multi-species model using the `mizer` package in R.
+
+The Dahood et al. (2019) EwE model contains **35 functional groups** representing the complete food web from phytoplankton to apex predators. The translation to mizer requires careful consideration of which groups can be represented as size-structured species versus resources, and how to preserve the key ecological interactions while working within mizer's framework.
+
+## Key Structural Decisions
+
+Based on analysis of the EwE model structure, forcing functions (Table 3 in Dahood et al. 2019), diet composition, and project objectives, the following key decisions were made:
+
+1. **Comprehensive species representation**: Include all major consumer groups as size-structured species to maintain calibration capability for the 8 monitored species and preserve important predator-prey dynamics
+2. **Extended single resource spectrum**: Use a single extended resource spectrum (1e-10 to 10 g) representing all lower trophic levels (phytoplankton, zooplankton, ice algae, benthic organic matter), forced by zooplankton dynamics to avoid temporal mismatches
+3. **Krill as size-structured species**: Model Antarctic krill as a full size-structured species (combining EwE's two stanzas) to explicitly represent the fishery and complex trophic role
+4. **Marine mammals and seabirds included**: Represent all marine mammal and seabird groups as size-structured species, following approaches used in previous mizer applications to whales
+
+# EwE Model Summary
+
+## Original EwE Functional Groups
+
+The Dahood et al. (2019) EwE model includes 35 functional groups:
+
+### Marine Mammals (11 groups)
+1. Killer whales (*Orcinus orca*)
+2. Leopard Seal (*Hydrurga leptonyx*)
+3. Weddell Seal (*Leptonychotes weddellii*)
+4. Crabeater Seal (*Lobodon carcinophaga*)
+5. Antarctic Fur Seals (*Arctocephalus gazella*)
+6. Southern Elephant Seals (*Mirounga leonina*)
+7. Sperm Whales (*Physeter macrocephalus*)
+8. Blue Whales (*Balaenoptera musculus*)
+9. Fin Whales (*Balaenoptera physalus*)
+10. Minke Whales (*Balaenoptera bonaerensis*)
+11. Humpback Whales (*Megaptera novaeangliae*)
+
+### Seabirds (6 groups)
+12. Emperor Penguins (*Aptenodytes forsteri*)
+13. Gentoo Penguins (*Pygoscelis papua*)
+14. Chinstrap Penguins (*Pygoscelis antarcticus*)
+15. Adélie Penguins (*Pygoscelis adeliae*)
+16. Macaroni Penguins (*Eudyptes chrysolophus*)
+17. Flying Birds (multi-species group)
+
+### Fish and Cephalopods (6 groups)
+18. Cephalopods (squids and octopods)
+19. Myctophids (lanternfishes)
+20. On-shelf fish (multi-species demersal group)
+21. *Notothenia rossii* (marbled rockcod)
+22. *Champsocephalus gunnari* (mackerel icefish)
+23. *Gobionotothen gibberifrons* (humped rockcod)
+
+### Invertebrates (6 groups)
+24. Salps (*Salpa thompsoni*)
+25. Benthic Invertebrates (multi-species group)
+26. Krill Large (*Euphausia superba*, ≥24 months)
+27. Krill Small (*Euphausia superba*, <24 months)
+28. Other Euphausiids (non-krill euphausiids)
+29. Micro-Zooplankton (<200 μm)
+
+### Plankton (6 groups)
+30. Meso-Zooplankton (200-2000 μm)
+31. Macro-Zooplankton (>2000 μm)
+32. Small Phytoplankton (<20 μm)
+33. Large Phytoplankton (>20 μm)
+34. Ice Algae (sea ice-associated microalgae)
+35. Detritus
+
+## Key EwE Model Features
+
+### Biomass Distribution
+- **Highest biomass groups**: Benthic invertebrates (8554 t/km²), Salps (16,000 t/km²), Large krill (8126 t/km²), Other euphausiids (14,800 t/km²)
+- **Phytoplankton**: Model-calculated to balance primary production (EE = 0.5)
+- **Marine mammals**: Generally low biomass (0.001-110 t/km²) but ecologically important
+- **Fish**: Moderate biomass (0.14-525 t/km²)
+
+### Trophic Structure
+- **Krill-centric ecosystem**: Antarctic krill appears in diets of most predators (12+ species consume >30% krill)
+- **Multiple trophic pathways**: 
+  - Ice algae → Krill → Predators
+  - Phytoplankton → Zooplankton → Fish → Predators
+  - Benthic pathway → Demersal fish → Predators
+- **Trophic levels**: Range from 1.0 (primary producers) to 4.72 (Killer whales)
+
+### Calibration and Forcing
+Dahood et al. (2019) successfully calibrated their model using:
+
+- **Sea-ice forcing**: Applied to multiple predator-prey interactions and used to drive krill and *G. gibberifrons* biomass via functional response curves
+- **Open water forcing**: Applied to gentoo penguins, fur seals, and other ice-avoiding species
+- **Chlorophyll-a forcing**: Applied to primary producers
+- **Observed predation rates**: Leopard seal predation on fur seal pups
+
+**Forcing function applications retained in final EwE model** (from Table 3):
+
+- 10 predators had forced interactions with their prey
+- Forcing reduced sum of squares by 65% compared to unfocused model
+- Largest impacts: Ice algae vulnerability to krill (1.48 SS reduction), Chinstrap penguin-krill interaction (1.33 SS reduction)
+
+# Mizer Model Structure
+
+## Size-Structured Species (26 species)
+
+The following groups from the EwE model will be represented as size-structured species in mizer:
+
+### Fish and Cephalopods (6 species)
+
+| Species | EwE Group | Biomass (t/km²) | Notes |
+|---------|-----------|---------|------------------------------|
+| Cephalopods | Cephalopods | 2.49 | Important prey for marine mammals |
+| Myctophids | Myctophids | 3.27 | Key mesopelagic fish |
+| On-shelf fish | On-shelf fish | 5.25 | Multi-species demersal group |
+| *Notothenia rossii* | N. rossii | 0.138 | Commercially important toothfish |
+| *Champsocephalus gunnari* | C. gunnari | 0.9 | Monitored icefish |
+| *Gobionotothen gibberifrons* | G. gibberifrons | 1.2 | Monitored, declined significantly |
+
+**Ecological role**: Mid-trophic level consumers, prey for marine mammals and seabirds
+
+### Euphausiids (2 species)
+
+| Species | EwE Groups | Biomass (t/km²) | Notes |
+|---------|-----------|---------|------------------------------|
+| Antarctic Krill | Krill Large + Krill Small | 81.26 + 28.93 | **Key species**: Combines both EwE stanzas into single size-structured species; target of commercial fishery |
+| Other Euphausiids | Other Euphausiids | 148 | Non-*E. superba* euphausiids |
+
+**Rationale for krill as species**: 
+
+- Explicit representation of krill fishery
+- Central role in food web (consumed by 20+ species)
+- Size-dependent predation dynamics
+- Can be driven by sea-ice forcing as in EwE model
+- EwE used multi-stanza approach (small/large separated by age 24 months); mizer naturally represents size structure
+
+### Seals (6 species)
+
+| Species | EwE Group | Biomass (t/km²) | Notes |
+|---------|-----------|---------|------------------------------|
+| Killer Whale | Killer whales | 0.0075 | Apex predator, forced interactions in EwE |
+| Leopard Seal | Leopard Seal | 0.0084 | **Monitored**, forced interactions, unique predator on seals/penguins |
+| Weddell Seal | Weddell Seal | 0.081 | Benthic feeder, different from other seals |
+| Crabeater Seal | Crabeater Seal | 1.098 | **Highest biomass seal**, krill specialist (78% diet) |
+| Antarctic Fur Seal | Antarctic fur seals | 0.0010 | **Monitored**, forced interactions in EwE, important for calibration |
+| S. Elephant Seal | S Elephant Seals | 0.0010 | Deep-diving cephalopod specialist |
+
+**Ecological role**: Top predators, diverse feeding strategies (krill specialists, fish feeders, apex predators)
+
+**Rationale for inclusion**: 
+
+- Antarctic Fur Seal is monitored and has calibration time series
+- Leopard Seal has forced interactions in EwE (Table 3)
+- Crabeater Seal has highest biomass among seals
+- Each seal has distinct diet (cannot aggregate)
+- Killer Whale is apex predator with unique role
+
+### Whales (5 species)
+
+| Species | EwE Group | Biomass (t/km²) | Notes |
+|---------|-----------|---------|------------------------------|
+| Sperm Whale | Sperm Whales | 0.0284 | Deep-diving cephalopod specialist (85% cephalopods) |
+| Blue Whale | Blue Whales | 0.0072 | Krill specialist (61% krill + 39% other euphausiids/zooplankton) |
+| Fin Whale | Fin Whales | 0.0428 | Krill specialist (71% krill), increasing population (EE = 0.98) |
+| Minke Whale | Minke Whales | 0.0473 | Krill specialist (76% krill) |
+| Humpback Whale | Humpback whales | 0.0812 | **Increasing population** (4.5% yr⁻¹), krill specialist (76% krill) |
+
+**Ecological role**: Large-bodied krill and cephalopod consumers
+
+**Rationale for separate species** (not aggregated despite diet similarity):
+
+- Humpback whale population increasing (biomass accumulation term in EwE)
+- Different body sizes affect size-based predation
+- Potential differential responses to climate change
+- Previous mizer studies have successfully modeled whales (will research parameterization approaches)
+
+### Penguins (5 species)
+
+| Species | EwE Group | Biomass (t/km²) | Notes |
+|---------|-----------|---------|------------------------------|
+| Emperor Penguin | Emperor Penguins | 0.00012 | Low biomass but ecologically distinct (winter breeder) |
+| Gentoo Penguin | Gentoo Penguins | 0.00116 | **Monitored**, increasing, open water forager, forced interactions in EwE |
+| Chinstrap Penguin | Chinstrap Penguins | 0.0214 | **Monitored**, declining, forced interactions in EwE |
+| Adélie Penguin | Adelie Penguins | 0.00583 | **Monitored**, declining, ice-associated |
+| Macaroni Penguin | Macaroni Penguins | 0.00011 | Moderate diet diversity (34% krill, 35% other euphausiids) |
+
+**Ecological role**: Intermediate predators, krill-dependent, key indicators of ecosystem change
+
+**Rationale for keeping all 5 species separate**:
+
+- Three species (Gentoo, Chinstrap, Adélie) are monitored with time series for calibration
+- Each has distinct response to sea ice (increasing vs. declining)
+- Forced interactions in EwE calibration (Table 3)
+- Different foraging strategies (ice-associated vs. open water)
+
+### Other Consumers (2 species)
+
+| Species | EwE Group | Biomass (t/km²) | Notes |
+|---------|-----------|---------|------------------------------|
+| Flying Birds | Flying Birds | 0.004 | Multi-species aggregate (petrels, albatrosses, etc.) |
+| Salps | Salps | 320 | **Very high biomass**, potential krill competitor, respond to warming |
+
+**Rationale for inclusion**:
+
+- **Flying Birds**: Represents important seabird predation not captured by penguins; moderate diet diversity
+- **Salps**: Critical for climate change scenarios; EwE notes salps may replace krill in warming areas; very high biomass
+
+## Resource Spectrum (Extended Single Spectrum)
+
+Mizer will use a single extended resource spectrum to represent all lower trophic levels, including phytoplankton, zooplankton, ice algae, and detrital/benthic organic matter. This pragmatic approach ensures adequate resource availability while avoiding temporal dynamics mismatches.
+
+### Extended Resource Spectrum
+
+**EwE groups represented**:
+
+- Small Phytoplankton (<20 μm)
+- Large Phytoplankton (>20 μm)
+- Ice Algae (sea ice-associated microalgae)
+- Micro-Zooplankton (<200 μm)
+- Meso-Zooplankton (200-2000 μm)
+- Macro-Zooplankton (>2000 μm)
+- Benthic Invertebrates (accessible fraction)
+- Detrital aggregates and organic particles
+
+**Total EwE biomass**: ~37,786 t/km² (Phytoplankton: ~28,735, Zooplankton: 190, Ice algae: ~307, Benthic: 8,554)
+
+**Mizer implementation**:
+
+- Single continuous size spectrum spanning from smallest phytoplankton to large zooplankton/organic particles
+- **Size range**: 1e-10 g to 10 g (~0.1 μm to ~20 mm equivalent diameter)
+  - Small end (1e-10 to 1e-6 g): Phytoplankton-sized particles
+  - Medium (1e-6 to 0.01 g): Zooplankton
+  - Large end (0.01 to 10 g): Large zooplankton, organic aggregates, accessible detritus
+- **Target biomass**: ~5,000-10,000 t/km² (conservative fraction of total EwE resources)
+- **Forcing strategy**: Driven by ISIMIP3a zooplankton data only:
+  - `zmicro-vint` (microzooplankton)
+  - `zmeso-vint` (mesozooplankton)
+- **Regeneration rate**: ~10 per year (appropriate for zooplankton dynamics)
+
+**Rationale for single extended spectrum**:
+
+1. **Zooplankton integration**: Zooplankton biomass already integrates phytoplankton dynamics through trophic interactions, providing a time-lagged signal that represents food availability
+2. **Consumer perspective**: Most modeled species feed on zooplankton rather than directly on phytoplankton; Antarctic krill consume copepods, not diatoms directly
+3. **Temporal stability**: Zooplankton dynamics are more stable than phytoplankton boom-bust cycles, avoiding forcing mismatches
+4. **Size coverage**: Extended range ensures prey availability for all consumer size classes from krill (≥0.1 g) to large predators
+5. **Standard mizer approach**: Works within mizer's single-resource framework without requiring custom code
+
+**Conceptual model**: The extended spectrum represents the continuum of "available organic matter" in the ecosystem, with biomass dynamics driven by the functional prey pool (zooplankton) that consumers actually access.
+
+**Ecological importance**:
+
+- Provides adequate energy base for entire consumer community (corrects for initial 99.5% resource deficit)
+- Captures key ecosystem pathways (phytoplankton → zooplankton → krill/fish → predators)
+- Enables size-based feeding dynamics across full trophic spectrum
+- Can be refined in future with size-dependent forcing if needed (small sizes: phyto, large sizes: zoo)
+
+## Species Excluded / Incorporated into Resources
+
+The following EwE group is **not** explicitly represented:
+
+- **Detritus** (5.77 t/km² input): Mizer does not explicitly model detritus. The detrital pathway is implicitly included through:
+
+  - Natural mortality contributing to resource production
+  - Unassimilated consumption creating nutrient recycling
+  - Resource spectrum regeneration rates
+
+# Predator-Prey Interaction Framework
+
+## Size-Based Predation
+
+Mizer uses size-based predation where predators consume prey within a preferred size range determined by:
+
+- **Predator-Prey Mass Ratio (PPMR)**: The preferred ratio of predator size to prey size (β)
+- **Feeding kernel width (σ)**: How selective predators are about prey size
+- **Interaction matrix**: Species-specific preferences for prey types
+
+### Deriving Mizer Interactions from EwE Diet Matrix
+
+The EwE diet matrix (Table 1 in Dahood et al. 2019) provides the proportion of each prey in each predator's diet. This will be translated to mizer's interaction matrix as follows:
+
+**For interactions between size-structured species**:
+
+- EwE diet proportions → mizer interaction matrix elements
+- Size-based feeding kernel determines actual consumption based on sizes
+- Example: Leopard Seal consumes 70% Large Krill in EwE → High interaction coefficient for Leopard Seal-Krill pair
+
+**For interactions with resource spectrum**:
+
+- Species feeding on plankton/resources in EwE → Interactions with extended resource spectrum
+- Example: Krill consumes 50% Large phytoplankton, 10% ice algae, 10% meso-zooplankton → All represented as interactions with the extended resource spectrum, with size-based feeding determining actual prey selection
+- Benthic feeders → Feed on larger size classes within the extended resource spectrum (representing accessible benthic organic matter)
+
+### Key Trophic Interactions to Preserve
+
+Based on EwE forcing functions (Table 3) and diet analysis, the following interactions are particularly important:
+
+**Ice Algae → Krill** (Strongest forcing effect in EwE):
+
+- Large Krill: 10% ice algae in diet, forcing applied to vulnerability and arena area
+- Small Krill: 25% ice algae in diet, forcing applied with sea ice index
+- **Mizer implementation**: Sea ice forcing can modulate resource availability or krill recruitment to represent ice algae effects on krill dynamics
+
+**Krill → Multiple Predators** (Central hub):
+20+ species consume krill, with varying dependencies:
+
+- High dependence (>70% diet): Chinstrap (95%), Adélie (96%), Crabeater Seal (78%), Minke (76%), Humpback (76%), Gentoo (80%)
+- Moderate dependence (30-70%): Fin (71%), Blue (61%), Emperor (52%), Fur Seal (50%), Cephalopods (40%)
+- **Mizer implementation**: High interaction coefficients for krill specialists; size-based feeding kernels determine actual consumption
+
+**Open Water Predators** (Forced in EwE with open water area):
+
+- Gentoo Penguin → On-shelf fish and Krill (forced with open water)
+- Antarctic Fur Seal → Cephalopods, On-shelf fish, Krill (forced with open water)
+- **Mizer implementation**: Can incorporate habitat-based interaction modulation
+
+**Benthic Pathway**:
+
+- Benthic Invertebrates → *G. gibberifrons* (59%), Weddell Seal (5%), Cephalopods (21%)
+- **Mizer implementation**: Larger size classes in extended resource spectrum represent accessible benthic organic matter; demersal feeders preferentially feed on these larger resource sizes
+
+**Sea Ice-Driven Biomass** (EwE used response curves):
+
+- Sea ice index → Large Krill biomass (sigmoidal response, largest biomass driver)
+- Sea ice index → *G. gibberifrons* biomass (linear response)
+- **Mizer implementation**: Will need to research mizer capabilities for environmental forcing of recruitment/mortality
+
+## Fishing
+
+**Krill Fishery**:
+
+- Only commercial fishery in Statistical Subarea 48.1
+- EwE average catch 1995-2001: ~51,000 tonnes
+- Recent catches (2010s): >150,000 tonnes in area 48.1
+- **Mizer implementation**: Size-selective fishing mortality on Antarctic Krill species
+
+**Historical Fish Fisheries** (ceased before model period):
+
+- *N. rossii*, *C. gunnari* were historically fished but not during EwE calibration period (1996-2012)
+- **Mizer implementation**: Include capability to impose fishing mortality for historical scenarios if needed
+
+ISIMIP3a fishing forcing data available:
+
+- `effort_histsoc_1841_2017_western-antarctic-peninsula.parquet`
+- Can be used to drive temporal fishing mortality
+
+# Size Ranges and Body Size Assignments
+
+A critical aspect of the mizer translation is assigning appropriate size ranges to each species. For groups that are not typically size-structured (e.g., adult marine mammals, adult seabirds), we need to determine how to represent them in mizer's size-based framework.
+
+## Approach for Different Taxa
+
+### Fish and Cephalopods
+
+- **Standard mizer approach**: Use species-specific von Bertalanffy growth parameters
+- Size ranges from recruitment size to maximum observed size (L∞)
+- Literature values available for most species in Hill et al. (2007) compilation
+
+### Euphausiids
+
+- **Antarctic Krill**: 
+
+  - EwE modeled as multi-stanza with transition at 24 months
+  - Size range: ~10 mm (recruitment) to ~60 mm (maximum adult size)
+  - Growth follows von Bertalanffy curve (K = 0.44, parameters from Rosenberg et al. 1986, Candy & Kawaguchi 2006)
+  - **Mizer**: Single species spanning full size range
+  
+- **Other Euphausiids**: Similar size range to krill
+
+### Marine Mammals and Seabirds
+These groups present a challenge for size-based modeling. We will research how previous mizer applications have handled whales and adapt those approaches. Options include:
+
+**Option 1: Full Life Cycle**
+
+- Model complete size range from birth/hatching to adult
+- Requires growth parameters and size-at-recruitment
+- May be feasible for pinnipeds with known growth curves
+
+**Option 2: Adult-Only Representation**
+
+- Model only adult size classes
+- Use narrow size range around adult body mass
+- Simpler but loses juvenile dynamics
+
+**Option 3: Representative Size Classes**
+
+- Select a few key size classes to represent age structure
+- Balance between biological realism and computational efficiency
+
+**Research needed**: Review literature on mizer applications to marine mammals (if available) to determine best practice approach for parameterization.
+
+## Preliminary Size Ranges
+
+Based on adult body masses from literature, preliminary maximum sizes (will refine):
+
+| Taxon | Mass Range | Notes |
+|-------|------------|--------------------|
+| **Fish** |  |  |
+| Myctophids | 1-50 g | Small mesopelagic fish |
+| *N. rossii* | 50-7000 g | Large nototheniid |
+| *C. gunnari* | 50-500 g | Icefish |
+| *G. gibberifrons* | 50-400 g | Smaller nototheniid |
+| On-shelf fish | 10-1000 g | Multi-species average |
+| Cephalopods | 100-5000 g | Squids and octopods |
+| **Euphausiids** |  |  |
+| Antarctic Krill | 0.1-1 g | ~10-60 mm length |
+| Other Euphausiids | 0.1-1 g | Similar to krill |
+| **Seals** |  |  |
+| Leopard Seal | 200-600 kg | Large phocid |
+| Weddell Seal | 400-600 kg | Large phocid |
+| Crabeater Seal | 200-300 kg | Medium phocid |
+| Fur Seal | 50-200 kg | Smaller otariid |
+| Elephant Seal | 500-4000 kg | Largest seal |
+| Killer Whale | 3000-8000 kg | Largest odontocete |
+| **Baleen Whales** |  |  |
+| Minke Whale | 5000-10000 kg | Smallest baleen whale |
+| Humpback Whale | 25000-40000 kg | Medium baleen whale |
+| Fin Whale | 40000-80000 kg | Large baleen whale |
+| Blue Whale | 80000-150000 kg | Largest animal |
+| **Sperm Whale** | 15000-50000 kg | Largest odontocete |
+| **Penguins** |  |  |
+| Emperor Penguin | 20-45 kg | Largest penguin |
+| Gentoo Penguin | 4-8 kg | Medium penguin |
+| Chinstrap Penguin | 3-6 kg | Medium penguin |
+| Adélie Penguin | 3-6 kg | Medium penguin |
+| Macaroni Penguin | 3-6 kg | Medium penguin |
+| **Other** |  |  |
+| Flying Birds | 0.5-5 kg | Average across species |
+| Salps | 0.001-0.1 kg | Colonial tunicates |
+
+# Key Assumptions and Simplifications
+
+## Assumptions Required for Translation
+
+### 1. Size-Based Representation of Non-Fish Species
+
+**Assumption**: Marine mammals and seabirds can be represented within mizer's size-based framework despite not exhibiting indeterminate growth
+
+**Justification**: 
+
+- Previous mizer studies have successfully modeled whales
+- Body size still determines feeding and predation risk
+- Can represent key processes (consumption, mortality, reproduction) even if growth pattern differs from fish
+
+**Implications**:
+
+- Will need creative parameterization approaches
+- May use narrow size ranges or discrete size classes
+- Growth parameters will represent maturation rather than continuous growth
+
+### 2. Combining EwE Krill Stanzas
+
+**Assumption**: EwE's two krill stanzas (small <24 months, large ≥24 months) can be combined into a single size-structured species
+
+**Justification**:
+
+- Mizer naturally represents size structure and growth through size classes
+- Von Bertalanffy growth parameters (K = 0.44) can describe transition from small to large
+- Size-based predation will automatically capture preferential predation on smaller vs. larger krill
+
+**Implications**:
+
+- Need to ensure size-based feeding kernels capture the diet differences between krill sizes in EwE
+- May need to calibrate recruitment to match total krill biomass
+
+### 3. Aggregation of Plankton Groups
+
+**Assumption**: Multiple EwE plankton groups can be aggregated into continuous resource spectra
+
+**Justification**:
+
+- Standard mizer approach for lower trophic levels
+- Size-based spectra can represent size diversity within functional groups
+- Forcing data (ISIMIP) provides phytoplankton and zooplankton abundances
+
+**Implications**:
+
+- Lose discrete functional group representation
+- Cannot explicitly model shifts between phytoplankton types
+- Resource dynamics simplified compared to EwE
+
+### 4. Detritus Pathway
+
+**Assumption**: Detrital pathway can be represented implicitly through resource dynamics
+
+**Justification**:
+
+- Mizer does not explicitly model detritus
+- Natural mortality and unassimilated consumption contribute to nutrient recycling
+- Resource regeneration can implicitly represent detrital remineralization
+
+**Implications**:
+
+- Cannot explicitly track detritus pools
+- May underestimate importance of detrital pathway for benthic communities
+- energy flow through detritus is implicit rather than explicit
+
+### 5. Spatial Homogeneity
+
+**Assumption**: Statistical Subarea 48.1 is treated as spatially homogeneous (well-mixed)
+
+**Justification**:
+
+- EwE model (non-Ecospace version) also assumes spatial homogeneity
+- Consistent with EwE approach being translated
+- Forcing data are area-averaged
+
+**Implications**:
+
+- Cannot represent spatial heterogeneity in krill distribution
+- Cannot model spatial MPAs without extension to spatial mizer
+- May miss local depletion effects near fishing activity
+
+### 6. Sea Ice Forcing Translation
+
+**Assumption**: EwE's forcing functions and response curves can be translated to mizer's forcing framework
+
+**Justification**:
+
+- Both models can incorporate environmental forcing
+- EwE demonstrated that sea ice is critical driver (65% SS reduction)
+- Mizer can incorporate external factors affecting growth, mortality, or resource availability
+
+**Challenges**:
+
+- Need to research mizer's capabilities for environmental forcing
+- May require custom functions or mizerExperimental features
+- Functional response curves (e.g., sigmoidal krill response to ice) may need creative implementation
+
+## Simplifications from EwE Model
+
+### 1. Diet Matrix to Interaction Matrix
+
+**Simplification**: EwE's detailed diet matrix (proportion of each prey in each predator diet) is simplified to species-level interaction coefficients combined with size-based feeding
+
+**What is lost**:
+
+- Age/size-specific diet information within EwE groups
+- Ability to specify exact diet proportions independent of size
+
+**What is gained**:
+
+- Emergent diet composition based on prey size and availability
+- More mechanistic representation of size-based predation
+
+### 2. Biomass Accumulation
+
+**Simplification**: EwE's biomass accumulation terms (Humpback whale +3.9% yr⁻¹, Fin whale +2.9% yr⁻¹) need alternative representation
+
+**Options**:
+
+- Adjust recruitment to create population increase
+- Modify mortality schedules
+- Incorporate trends in carrying capacity
+
+**Implications**: Population trends may need to be forced rather than emergent
+
+### 3. Forcing Function Applications
+
+**Simplification**: EwE applied forcing functions to specific predator-prey interaction parameters (vulnerability, search rate, arena area). Mizer's forcing may work differently.
+
+**EwE forcing preserved**:
+
+- Sea ice effects on ice algae and krill
+- Open water effects on fur seals and gentoo penguins
+- Chlorophyll effects on primary production
+
+**Challenges**: 
+
+- Mizer may not have direct equivalents to EwE's "arena area" or "vulnerability" parameters
+- May need to implement forcing through resource availability or mortality modulation
+
+### 4. Cannibalism
+
+**Simplification**: EwE explicitly disallowed cannibalism for all groups. Mizer's size-based predation may allow cannibalism if size ranges overlap.
+
+**Approach**: 
+
+- Can set interaction matrices to zero for self-interactions
+- Or allow cannibalism where biologically realistic (e.g., large fish eating small conspecifics)
+
+### 5. Multi-Species Functional Groups
+
+**Simplification**: Some EwE multi-species groups (On-shelf fish, Flying Birds) are represented as single species in mizer
+
+**What is lost**:
+
+- Species diversity within functional groups
+- Differential responses of component species
+
+**Justification**:
+
+- Insufficient data to parameterize multiple component species
+- Functional group approach consistent with EwE model's own approach
+- Preserves overall trophic role
+
+# Model Parameterization Approach
+
+The translation from EwE to mizer will preserve key parameters where possible:
+
+## Parameters Directly Translatable
+
+1. **Biomass** (B): EwE biomass (t/km²) → Mizer initial abundances (converted to numbers-at-size using size structure)
+
+2. **Production to Biomass ratio** (P/B): EwE annual P/B → Related to mizer growth and mortality parameters
+   - For multi-cellular organisms: P/B ≈ natural mortality M
+   - Will inform background mortality (z0) in mizer
+
+3. **Consumption to Biomass ratio** (Q/B): EwE annual Q/B → Informs mizer feeding parameters
+   - Relates to maximum consumption rate and feeding level
+
+4. **Diet Composition**: EwE diet matrix → Mizer interaction matrix + size-based preferences
+
+5. **Fishing Mortality**: EwE fishing effort and catches → Mizer fishing mortality arrays
+
+## Parameters Requiring Derivation
+
+1. **Size-at-maturity** (w_mat): Need to derive from literature for each species
+
+   - Fish: Well-documented for most species
+   - Marine mammals: Age/size at sexual maturity
+   - Penguins: Body mass at first breeding
+
+2. **Asymptotic size** (w_inf): Maximum body size
+
+   - Fish: L∞ from von Bertalanffy growth
+   - Mammals/birds: Maximum adult body mass
+
+3. **von Bertalanffy K**: Growth rate parameter
+
+   - Fish: Available in literature for most species
+   - Krill: K = 0.44 (from EwE model)
+   - Mammals/birds: May need alternative parameterization
+
+4. **Predator-Prey Mass Ratio** (beta): Preferred predator:prey size ratio
+
+   - Derive from predator size and typical prey sizes in EwE diets
+   - Literature values for feeding mode (benthic feeders, planktivores, piscivores, etc.)
+
+5. **Feeding kernel width** (sigma): Size selectivity
+
+   - Specialists: Narrow feeding kernel
+   - Generalists: Broad feeding kernel
+
+6. **Reproductive efficiency** (erepro): Conversion of energy to reproduction
+
+   - Will need calibration to match biomass and recruitment patterns
+
+## Research Needed for Marine Mammals/Seabirds
+
+Key questions requiring literature review and potentially consultation with mizer experts:
+
+1. How have previous mizer studies parameterized whales?
+2. What approaches exist for modeling organisms with determinate growth?
+3. How to represent annual breeding cycles in mizer's continuous time framework?
+4. What are appropriate size ranges for adult-only representations?
+5. How to handle extreme size differences between nekton and mammals/birds in the same model?
+
+# Environmental Forcing Implementation
+
+Based on Dahood et al. (2019) success with environmental forcing, the mizer model will incorporate:
+
+## Sea Ice Forcing
+
+**Data source**: ISIMIP3a `siconc` (sea ice concentration)
+
+**Applications** (following EwE Table 3):
+
+1. **Resource Availability Modulation**:
+
+   - Resource carrying capacity can be modulated by sea ice cover
+   - Higher ice → potentially higher resource availability (representing ice algae contribution)
+
+2. **Krill Dynamics**:
+
+   - EwE used sigmoidal response curve (sea ice index → large krill biomass)
+   - Mizer implementation options:
+     - Sea ice affects krill recruitment (R_max or erepro modulation)
+     - Sea ice affects krill resource availability (modulate capacity of smaller resource sizes)
+     - Sea ice affects krill mortality (overwinter survival)
+   - **Most realistic**: Combination of resource availability modulation + recruitment modulation
+
+3. **Predator-Prey Interactions**:
+
+   - EwE forced Chinstrap-Krill interaction (1.33 SS reduction)
+   - EwE forced interactions for Leopard Seal, Fur Seal
+   - Mizer implementation: Research how to modulate interaction strength with environmental variables
+
+## Open Water Forcing
+
+**Data source**: Can derive from sea ice concentration (open water = 1 - ice cover)
+
+**Applications** (following EwE Table 3):
+
+1. **Gentoo Penguin** feeding:
+
+   - Open water increases foraging success on on-shelf fish and krill
+
+2. **Antarctic Fur Seal** feeding:
+
+   - Open water increases foraging success (pelagic hunter)
+
+3. **Fish interactions**:
+
+   - EwE applied to C. gunnari and N. rossii interactions
+
+## Plankton Forcing
+
+**Data sources**: ISIMIP3a zooplankton fields (primary) and phytoplankton fields (optional future refinement)
+
+1. **Extended Resource Spectrum (Phase 1 - Current)**:
+
+   - Driven by zooplankton data only: `zmicro-vint` + `zmeso-vint`
+   - Zooplankton biomass integrates phytoplankton dynamics through trophic interactions
+   - Provides stable, biologically-relevant forcing
+   - Avoids temporal mismatch between phytoplankton boom-bust and zooplankton lagged response
+
+2. **Size-Dependent Forcing (Phase 2 - Future Option)**:
+
+   - Small resource sizes (< 1e-6 g): Could be driven by phytoplankton data (`phydiat-vint`, `phydiaz-vint`, `phypico-vint`)
+   - Large resource sizes (≥ 1e-6 g): Driven by zooplankton data (`zmicro-vint`, `zmeso-vint`)
+   - Would better capture different dynamics across size spectrum
+   - Requires custom capacity matrix implementation
+
+3. **Chlorophyll-a**:
+
+   - EwE applied chlorophyll forcing to primary production
+   - ISIMIP data are vertically integrated biomasses, may correlate with chlorophyll
+   - Can potentially derive chlorophyll-equivalent metric from phytoplankton biomasses if needed for validation
+
+## Temperature Forcing
+
+**Data sources**: ISIMIP3a `tob` (bottom temperature), `tos` (surface temperature)
+
+**Potential applications** (not explicitly in EwE calibration but ecologically important):
+
+1. **Metabolic rates**: Temperature-dependence of consumption and metabolism
+2. **Growth rates**: Temperature affects growth efficiency
+3. **Fish distributions**: Temperature may affect habitat suitability (not in non-spatial model but affects parameters)
+
+**Implementation**: Mizer has built-in temperature dependence capabilities; need to evaluate if/how to use
+
+# Summary: Model Structure Overview
+
+## Complexity and Comprehensiveness
+
+The translated mizer model will be **comprehensive**, representing:
+
+- **26 size-structured species** (fish, euphausiids, seals, whales, penguins, salps)
+- **1 extended resource spectrum** (representing phytoplankton, zooplankton, ice algae, benthic organic matter)
+- **Multiple forcing mechanisms** (sea ice, open water, zooplankton dynamics, temperature)
+- **Explicit krill fishery**
+- **Full food web** from primary producers to apex predators
+
+This is a **complex translation** that pushes mizer beyond its typical application domain (fish-focused models) to include air-breathing vertebrates. However, this comprehensiveness is justified by:
+
+1. **Calibration requirements**: 8 monitored species need to be represented for model validation
+2. **Ecosystem approach**: WAP ecosystem is truly krill-centric with multiple dependent predator groups
+3. **Climate change focus**: Sea ice forcing affects multiple groups across taxa
+4. **Management relevance**: Model designed to inform MPA planning, requiring multi-species representation
+
+## Challenges and Innovations
+
+**Challenges**:
+
+- Representing marine mammals and seabirds in size-based framework
+- Implementing EwE-style forcing in mizer
+- Calibrating complex model with 26 species
+
+**Innovations**:
+
+- Extended single resource spectrum representing all lower trophic levels (fixes 99.5% resource deficit)
+- Zooplankton-only forcing strategy to avoid temporal dynamics mismatches
+- Comprehensive representation of Antarctic food web in mizer including air-breathing vertebrates
+
+## Comparison to EwE Model
+
+| Aspect | EwE Model | Mizer Model |
+|--------|-----------|-------------|
+| **Groups/Species** | 35 functional groups | 26 species + 1 extended resource spectrum |
+| **Size structure** | Multi-stanza for krill only | All 26 species size-structured |
+| **Lower trophic levels** | 9 discrete groups | 1 extended continuous spectrum (1e-10 to 10 g) |
+| **Spatial structure** | Homogeneous (non-Ecospace) | Homogeneous (non-spatial mizer) |
+| **Temporal resolution** | Monthly time steps | Flexible (typically annual or finer) |
+| **Predation** | Diet matrix + vulnerabilities | Size-based with interaction matrix |
+| **Environmental forcing** | Forcing functions + response curves | Zooplankton forcing on resource capacity |
+| **Calibration targets** | 8 species time series | Same 8 species time series |
+| **Primary output** | Biomass trajectories | Biomass + size spectra + indicators |
+
+The mizer translation **preserves the essential structure** of the EwE model while leveraging mizer's strengths in size-based dynamics and potentially providing additional insights from size spectrum analyses.
+
+---
+
+[Next: Parameter Derivation and Conversion →](03_parameter_derivation.qmd)

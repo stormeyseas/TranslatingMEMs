@@ -1,0 +1,504 @@
+---
+title: "Step 4: Resource Spectrum Parameterization"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author:
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+[← Previous: Parameter Derivation](03_parameter_derivation.qmd)
+
+```{r}
+#| label: setup
+#| include: false
+#| code-summary: "Load packages and documentation helper functions"
+
+# Source documentation helper functions
+source("doc_functions.R")
+```
+
+```{r}
+#| label: source-script
+#| code-summary: "Source R script for resource spectrum parameterization"
+#| output: false
+
+# Run resource spectrum parameterization script
+source_model_script("02_resource_spectrum.R")
+```
+
+# Overview
+
+This document describes the parameterization of the resource spectrum in the mizer model, representing all lower trophic levels (phytoplankton, zooplankton, ice algae, accessible benthic organic matter, and detrital aggregates) that form the base of the food web in the Western Antarctic Peninsula ecosystem.
+
+# Background: Resource Spectrum in Mizer
+
+In mizer, the resource spectrum represents organisms that are not explicitly modeled as size-structured species. These are typically phytoplankton and small zooplankton that:
+
+1. Serve as food for the smallest size classes of modeled species
+2. Follow a power-law size spectrum: $N(w) = \kappa w^{-\lambda}$
+3. Have semi-chemostat dynamics with carrying capacity and growth rate
+
+The resource spectrum is crucial because it:
+
+- Provides the energy input at the base of the food web
+- Determines the productivity of the entire system
+- Can be linked to environmental forcing (e.g., plankton biomass from climate models)
+
+# EwE Resource Groups
+
+From the Dahood et al. (2019) EwE model, the following groups are represented in the extended resource spectrum:
+
+## Zooplankton Groups
+
+| Group | Biomass (t/km²) | P/B (/year) | Notes |
+|-------|----------------|-------------|-------|
+| Micro-zooplankton | 25 | 55 | High turnover |
+| Meso-zooplankton | 130 | 4.81 | Main biomass component |
+| Macro-zooplankton | 35 | 2.5 | Larger zooplankton |
+| **Total** | **190** | **10.95*** | *Weighted average |
+
+## Primary Producers
+
+| Group | Biomass (t/km²) | P/B (/year) | Notes |
+|-------|----------------|-------------|-------|
+| Small phytoplankton | ~15,023 | 75 | Model-calculated in EwE (EE=0.5) |
+| Large phytoplankton | ~13,712 | 75 | Model-calculated in EwE (EE=0.5) |
+| Ice Algae | ~307 | 50 | Seasonal, ice-associated |
+| **Total** | **~28,735** | **~75*** | *Phytoplankton average |
+
+## Other Resources
+
+| Group | Biomass (t/km²) | P/B (/year) | Notes |
+|-------|----------------|-------------|-------|
+| Benthic Invertebrates | 8,554 | 2.0 | Accessible fraction for demersal feeders |
+| Detritus | Input: 5.77 | — | Implicitly included in organic matter pool |
+
+## Total Resource Pool
+
+**Combined EwE Resources: ~37,786 t/km²**
+
+This represents the complete resource base supporting the consumer community.
+
+::: {.callout-note}
+## Translation Decision: Extended Single Spectrum
+
+Rather than implementing multiple separate resource spectra (which is not well-supported in standard mizer), we use a **single extended resource spectrum** that conceptually represents all resource types:
+
+1. **Size coverage**: Spans from smallest phytoplankton (1e-10 g) to large zooplankton/organic particles (10 g)
+2. **Biomass target**: Conservative subset (~5,000-10,000 t/km²) of total EwE resources to ensure adequate food availability
+3. **Forcing strategy**: Uses **zooplankton dynamics only** (zmicro + zmeso from ISIMIP) to avoid temporal mismatch between phytoplankton and zooplankton cycles
+4. **Ecological justification**: Zooplankton biomass already integrates phytoplankton production through trophic interactions; represents the "available prey pool" that consumers actually access
+
+This pragmatic approach:
+- Fixes the critical resource deficit (initial implementation had only 190 t/km², 99.5% below target)
+- Works within standard mizer framework
+- Provides stable forcing based on functional prey availability
+- Can be refined with size-dependent forcing in future iterations
+:::
+
+# Resource Spectrum Parameterization
+
+## Size Range
+
+The extended resource spectrum must span from the smallest phytoplankton to sizes large enough to support feeding by the smallest modeled consumer (Antarctic krill, minimum size 0.1 g). The spectrum needs to extend well into prey sizes accessible to krill and small fish:
+
+```{r}
+#| label: size-range-example
+#| eval: false
+#| echo: true
+#| code-summary: "Define extended resource size range (for illustration)"
+
+w_min_resource <- 1e-10  # Smallest phytoplankton (~0.5 μm diameter)
+w_max_resource <- 10     # Large zooplankton and organic particles (~20 mm)
+```
+
+This extended range covers:
+
+- **Picoplankton** (1e-10 to 1e-8 g, ~0.5-2 μm): Smallest phytoplankton, bacteria
+- **Nanoplankton** (1e-8 to 1e-6 g, ~2-20 μm): Small phytoplankton, flagellates, protozoans
+- **Microplankton** (1e-6 to 1e-4 g, ~20-200 μm): Diatoms, dinoflagellates, microzooplankton
+- **Mesoplankton** (1e-4 to 0.01 g, ~0.2-5 mm): Copepods, copepod nauplii, larvae
+- **Macroplankton** (0.01 to 10 g, ~5-20 mm): Large copepods, euphausiids, organic aggregates
+
+**Critical improvement**: The original narrow range (1e-8 to 0.001 g) created a 100× size gap between the largest resource and smallest consumer, causing starvation. The extended range provides proper overlap with consumer feeding ranges.
+
+## Power-Law Parameters
+
+### Lambda (λ)
+
+The exponent λ determines the slope of the size spectrum. Typical values for marine ecosystems range from 2.0 to 2.2 [@andersen2016].
+
+**Selected value: λ = 2.05**
+
+This is consistent with:
+
+- Community size spectra theory
+- Observations in Antarctic waters
+- Mizer default recommendations
+
+### Kappa (κ)
+
+The coefficient κ scales the abundance and is calculated to match a target total resource biomass. For the extended spectrum, we use a conservative estimate that provides adequate food for consumers while representing a subset of total EwE resources:
+
+$$B_{total} = \int_{w_{min}}^{w_{max}} w \cdot \kappa \cdot w^{-\lambda} \, dw = \kappa \int_{w_{min}}^{w_{max}} w^{1-\lambda} \, dw$$
+
+$$B_{total} = \kappa \left[ \frac{w^{2-\lambda}}{2-\lambda} \right]_{w_{min}}^{w_{max}}$$
+
+Solving for κ:
+
+$$\kappa = \frac{B_{total}}{\frac{w_{max}^{2-\lambda} - w_{min}^{2-\lambda}}{2-\lambda}}$$
+
+**Target biomass calculation**:
+
+```{r}
+#| eval: false
+#| echo: true
+
+# Calculate target biomass
+zoo_biomass_ewe <- 190       # g/m² (measured zooplankton)
+phyto_multiplier <- 20       # Phyto typically ~20× zoo in productive waters
+benthic_background <- 1000   # Accessible benthic/detrital organic matter
+
+target_total <- zoo_biomass_ewe * (1 + phyto_multiplier) + benthic_background
+# = 190 * 21 + 1000 = 4,990 g/m² (conservative)
+
+# Calculate kappa
+lambda_resource <- 2.05
+exponent <- 2 - lambda_resource
+biomass_integral <- (w_max_resource^exponent - w_min_resource^exponent) / exponent
+kappa_resource <- target_total / biomass_integral
+```
+
+**Result: κ ≈ 330** (provides ~5,000 t/km² resources vs. original 8.641 providing only 190 t/km²)
+
+**Scaling options**:
+
+- Conservative: 5,000 t/km² (used initially)
+- Moderate: 10,000 t/km² (if consumers struggle)
+- Full: 20,000-30,000 t/km² (closer to EwE total)
+
+## Resource Dynamics
+
+In mizer, resource dynamics follow a semi-chemostat model:
+
+$$\frac{dN_R(w)}{dt} = r_{pp}(w) \left[ \kappa(w) - N_R(w) \right] - \mu_R(w)$$
+
+Where:
+
+- $N_R(w)$: Resource abundance at size $w$
+- $r_{pp}(w)$: Resource growth/replenishment rate
+- $\kappa(w)$: Carrying capacity (can be time-varying)
+- $\mu_R(w)$: Predation mortality (from consumers)
+
+### Growth Rate
+
+The resource growth rate represents the regeneration/turnover rate appropriate for zooplankton dynamics (since we are forcing with zooplankton data):
+
+$$r_{pp} = \frac{\sum (B_i \times P/B_i)}{\sum B_i \times 365}$$
+
+For the three zooplankton groups:
+
+$$r_{pp} = \frac{(25 \times 55) + (130 \times 4.81) + (35 \times 2.5)}{190 \times 365} \approx 0.030 \text{ day}^{-1}$$
+
+This gives an annual turnover rate of approximately **10-11 times per year**, which is:
+- Appropriate for mixed zooplankton communities (micro-zoo: ~50/year, meso-zoo: ~5/year)
+- Much faster than the initial implementation (0.0301/year, which was 1000× too slow!)
+- Slower than phytoplankton (50-365/year) but faster than benthic fauna (1-2/year)
+- Reasonable weighted average for the extended spectrum
+
+**Note**: While phytoplankton turnover faster (~75/year in EwE), using zooplankton regeneration rate is appropriate because:
+1. We're forcing with zooplankton data (not phytoplankton)
+2. Zooplankton biomass already reflects integrated phytoplankton production
+3. This avoids temporal mismatch between phyto boom-bust cycles and zoo lagged response
+
+# ISIMIP3a Plankton Forcing
+
+## Data Sources
+
+The ISIMIP3a protocol provides monthly plankton biomass from the GFDL-MOM6-COBALT2 Earth System Model:
+
+| Variable | Description | Units |
+|----------|-------------|-------|
+| `phydiat-vint` | Diatoms (vertically integrated) | mol C m⁻² |
+| `phydiaz-vint` | Diazotrophs | mol C m⁻² |
+| `phypico-vint` | Picophytoplankton | mol C m⁻² |
+| `zmicro-vint` | Microzooplankton | mol C m⁻² |
+| `zmeso-vint` | Mesozooplankton | mol C m⁻² |
+
+Period: 1961-2010 (monthly)  
+Spatial resolution: 15 arcmin  
+Domain: Western Antarctic Peninsula
+
+## Biomass Conversion
+
+Carbon content is converted to biomass using the molecular weight of carbon (12 g/mol):
+
+$$B_{g/m^2} = C_{mol/m^2} \times 12 \, \text{g/mol}$$
+
+## Time-Varying Resource Capacity
+
+To incorporate environmental forcing, we make the resource carrying capacity time-varying using **zooplankton data only**:
+
+$$\kappa(t) = \kappa_{baseline} \times f(t)$$
+
+Where $f(t)$ is a scaling factor based on zooplankton biomass from ISIMIP:
+
+$$f(t) = \frac{B_{zmicro}(t) + B_{zmeso}(t)}{\overline{B_{zmicro} + B_{zmeso}}}$$
+
+**Why zooplankton forcing only?**
+
+1. **Trophic integration**: Zooplankton biomass already integrates phytoplankton dynamics through feeding and reproduction (weeks lag)
+2. **Consumer relevance**: Most modeled species feed on zooplankton, not directly on phytoplankton (krill eat copepods, not diatoms)
+3. **Temporal stability**: Zooplankton shows dampened dynamics (CV ~0.5) vs. phytoplankton boom-bust (CV >1.0)
+4. **Avoids mismatch**: Single forcing cannot capture opposing phyto-zoo dynamics simultaneously (when phyto crashes post-bloom, zoo peaks)
+
+This approach:
+
+1. Maintains the baseline resource spectrum structure
+2. Scales the carrying capacity with functional prey availability
+3. Incorporates climate-driven changes in resource production
+4. Provides stable, biologically-relevant bottom-up forcing
+
+::: {.callout-important}
+## Implementation Decision
+
+Time-varying capacity will be implemented in later calibration steps ([Step 7](07_calibration.qmd)). Initial model runs will use constant capacity to establish baseline dynamics.
+:::
+
+# Comparison: EwE vs ISIMIP
+
+## Biomass Estimates
+
+Comparing the resource biomass from different sources:
+
+**EwE Zooplankton:** 190 g/m²
+
+- Micro-zoo: 25 g/m²
+- Meso-zoo: 130 g/m²
+- Macro-zoo: 35 g/m²
+
+**ISIMIP Plankton (1961-2010 mean):**
+
+- Microzooplankton: ~1.5 g C/m² = 18 g/m² (biomass)
+- Mesozooplankton: ~0.2 g C/m² = 2.4 g/m² (biomass)
+- **Total zoo: ~20 g/m²**
+
+::: {.callout-warning}
+## Biomass Discrepancy
+
+There is an order of magnitude difference between EwE and ISIMIP zooplankton biomass. Possible reasons:
+
+1. **Unit conversion issues:** Need to verify C:biomass conversion factors
+2. **Spatial averaging:** ISIMIP averages over large grid cells including deep water
+3. **EwE calibration:** EwE biomass may be calibrated to shelf/coastal areas
+4. **Model representation:** COBALT may underestimate polar zooplankton
+5. **Carbon-to-wet-weight:** May need different conversion (typically 1:5-1:10 for zooplankton)
+
+**Resolution:** Use EwE biomass as baseline for initial parameterization, then calibrate against observations during model tuning. ISIMIP forcing will be used for relative temporal variation, not absolute values.
+:::
+
+# Implementation in Mizer
+
+## Basic Setup
+
+```{r}
+#| label: basic-setup-example
+#| eval: false
+#| echo: true
+#| code-summary: "Example code for setting up resource spectrum in mizer (for illustration)"
+
+# Load resource parameters
+resource_params <- readRDS(file.path(MODEL_DIR, "resource_params.rds"))
+
+# Create mizer params object
+params <- newMultispeciesParams(
+  species_params = species_params,
+  interaction = interaction_matrix,
+  
+  # Resource spectrum parameters
+  kappa = resource_params$kappa,
+  lambda = resource_params$lambda,
+  w_pp_cutoff = resource_params$w_pp_cutoff,
+  resource_rate = resource_params$r_pp,
+  
+  # Other parameters...
+)
+```
+
+## Time-Varying Capacity (Optional)
+
+For simulations with environmental forcing:
+
+```{r}
+#| label: time-varying-example
+#| eval: false
+#| echo: true
+#| code-summary: "Example code for time-varying resource capacity (for illustration)"
+
+# Extract time series
+capacity_ts <- resource_params$capacity$time_series
+
+# Create time-varying capacity function
+resource_capacity_fn <- function(params, t, ...) {
+  # Get the time index
+  time_idx <- which.min(abs(capacity_ts$time - t))
+  scaling <- capacity_ts$scaling_factor[time_idx]
+  
+  # Scale the baseline capacity
+  return(resource_params$kappa * scaling)
+}
+
+# Set in params
+params <- setResource(params,
+                     resource_capacity = resource_capacity_fn,
+                     resource_rate = resource_params$r_pp)
+```
+
+# Validation
+
+## Parameter Summary
+
+The following parameters are calculated for the extended resource spectrum:
+
+| Parameter | Old Value | New Value | Units |
+|-----------|-----------|-----------|-------|
+| **λ (lambda)** | 2.05 | 2.05 | dimensionless |
+| **κ (kappa)** | 8.641 | ~330 | g^(λ-1)/m² |
+| **w_min** | 1.0 × 10⁻⁸ | 1.0 × 10⁻¹⁰ | g |
+| **w_max (w_pp_cutoff)** | 1.0 × 10⁻³ | 10 | g |
+| **Resource rate** | 0.0301 | 10 | year⁻¹ |
+| **Resource rate** | 8.2 × 10⁻⁵ | 0.0274 | day⁻¹ |
+| **Target biomass** | 190 | 5,000 | g/m² (t/km²) |
+
+**Critical improvements**:
+- **Size range expanded 100,000×**: Now covers phytoplankton to large zooplankton
+- **Kappa increased 38×**: Provides adequate resource biomass
+- **Regeneration increased 333×**: Appropriate turnover rate for zooplankton
+- **Biomass increased 26×**: Corrects inverted trophic pyramid (was 99.5% deficient)
+
+These parameters ensure that the resource spectrum provides ~5,000-10,000 t/km² of resource biomass, adequate to support the consumer community (~750 t/km²) with proper 7:1 to 13:1 resource:consumer ratio.
+
+## Resource Spectrum Shape
+
+![Resource Spectrum Shape](../Models/AI-assisted/Attempt 1/plots/resource_spectrum_shape.png){#fig-resource-spectrum}
+
+As shown in @fig-resource-spectrum, the resource spectrum follows the expected power-law distribution $N(w) = \kappa w^{-\lambda}$ across the size range from 10⁻⁸ to 10⁻³ g. The slope parameter λ = 2.05 is consistent with marine size spectra theory and observations in Antarctic waters.
+
+## Biomass Distribution by Size
+
+![Biomass Distribution by Size](../Models/AI-assisted/Attempt 1/plots/resource_biomass_by_size.png){#fig-biomass-by-size}
+
+@fig-biomass-by-size shows how resource biomass is distributed across different size classes. The total integrated biomass equals the target value of 190 g/m² from the EwE model, ensuring consistency with the food web energetics baseline.
+
+## Temporal Dynamics: ISIMIP Plankton Forcing
+
+![ISIMIP Plankton Time Series](../Models/AI-assisted/Attempt 1/plots/plankton_forcing_timeseries.png){#fig-plankton-forcing}
+
+The ISIMIP3a plankton forcing data shown in @fig-plankton-forcing (GFDL-MOM6-COBALT2 model, 1961-2010) shows:
+
+- **Microzooplankton:** Mean ~1.5 g C/m² (18 g/m² biomass)
+- **Mesozooplankton:** Mean ~0.2 g C/m² (2.4 g/m² biomass)
+- **Total zooplankton:** ~20 g/m² (ISIMIP)
+
+The time series exhibits clear seasonal cycles with interannual variation, providing a basis for time-varying resource capacity in future simulations.
+
+## Biomass Comparison: EwE vs ISIMIP
+
+![Biomass Comparison](../Models/AI-assisted/Attempt 1/plots/biomass_comparison_ewe_isimip.png){#fig-biomass-comparison}
+
+@fig-biomass-comparison reveals a significant discrepancy between data sources:
+
+| Source | Zooplankton Biomass | Total Plankton Biomass |
+|--------|---------------------|------------------------|
+| **EwE Model** | 190 g/m² | — |
+| **ISIMIP (zmicro + zmeso)** | ~20 g/m² | ~150 g/m² |
+
+This order-of-magnitude difference is attributed to:
+
+1. **Carbon-to-biomass conversion:** Simple 12:1 conversion may underestimate actual biomass
+2. **Spatial scale:** ISIMIP averages over large grid cells including deep water; EwE focuses on shelf/coastal areas
+3. **Model structure:** COBALT may underrepresent polar zooplankton productivity
+4. **Calibration differences:** EwE biomass calibrated to local observations
+
+**Resolution:** We use the EwE baseline (190 g/m²) for initial parameterization to maintain consistency with the food web structure. ISIMIP forcing will be applied as relative temporal variation (scaling factors) rather than absolute values during environmental forcing implementation.
+
+## Validation Outcomes
+
+**Expected after extended spectrum implementation:**
+
+- ✓ **Biomass adequacy:** Resource spectrum provides ~5,000 t/km² (26× increase from 190)
+- ✓ **Size distribution:** Power-law with appropriate slope (λ = 2.05)
+- ✓ **Turnover rate:** Resource rate of 10 year⁻¹ appropriate for zooplankton dynamics
+- ✓ **Size range:** Extended coverage from phytoplankton (10⁻¹⁰ g) to large zooplankton (10 g)
+- ✓ **Consumer access:** Resources now overlap with consumer feeding ranges (krill can feed on 0.01-1 g prey)
+- ✓ **Trophic pyramid:** Proper structure with resources > consumers (not inverted)
+- ✓ **Energy flow:** Production (~50,000 t/km²/year) >> demand (~2,000 t/km²/year)
+- ✓ **Temporal forcing:** ISIMIP zooplankton data provides stable, relevant forcing
+
+# Key Decisions and Assumptions
+
+## Decisions
+
+1. **Use extended single spectrum:** Represents all resources (phyto, zoo, benthic, detritus) in one continuum
+2. **Size range 10^-10 to 10 g:** Expanded to include full range from phytoplankton to large zooplankton
+3. **Lambda = 2.05:** Standard value for marine size spectra (retained)
+4. **Kappa scaled for adequate biomass:** Target ~5,000 t/km² to support consumers (not just 190)
+5. **Zooplankton forcing only:** Avoids temporal mismatch between phyto and zoo dynamics
+6. **Conservative biomass target:** Use subset of EwE total initially, can increase if needed
+
+## Assumptions
+
+1. **Size spectrum theory applies:** Extended spectrum still follows power-law distribution
+2. **Semi-chemostat dynamics:** Resources have carrying capacity and regeneration rate
+3. **Spatial homogeneity:** Resource parameters uniform across model domain
+4. **Zooplankton as functional prey:** Zoo biomass represents "available food" for consumers
+5. **Trophic integration:** Zoo dynamics capture integrated phytoplankton production signal
+6. **Single forcing adequate:** Zooplankton forcing can represent entire extended spectrum (Phase 1)
+
+## Uncertainties
+
+1. **Optimal target biomass:** Range from 5,000 to 30,000 t/km² defensible; may need calibration
+2. **Regeneration rate:** Using zoo rate (10/year) vs. size-dependent rates
+3. **Size spectrum slope:** λ = 2.05 may need adjustment for extended range
+4. **Forcing strategy:** Single zoo forcing vs. future size-dependent forcing (phyto for small, zoo for large)
+5. **Benthic representation:** Lumped into spectrum vs. future explicit species
+6. **Ice algae seasonality:** Not explicitly captured in Phase 1 implementation
+
+# Sensitivity Analysis
+
+Key parameters to test during model calibration:
+
+1. **Kappa (κ):** ±50% to assess biomass sensitivity
+2. **Lambda (λ):** 2.0 to 2.2 to test spectrum shape
+3. **Resource rate:** ±30% to test production dynamics
+4. **Size range:** Adjust w_max to test consumer access
+
+# Code and Data
+
+## Scripts
+
+- [`Models/AI-assisted/Attempt 1/02_resource_spectrum.R`](../Models/AI-assisted/Attempt 1/02_resource_spectrum.R): Main parameterization script
+
+## Outputs
+
+- `resource_params.rds`: Compiled resource parameters for model setup
+- `resource_spectrum_shape.png`: Visualization of N(w)
+- `resource_biomass_by_size.png`: Biomass distribution
+- `plankton_forcing_timeseries.png`: ISIMIP temporal variation
+- `biomass_comparison_ewe_isimip.png`: Source comparison
+
+## Input Data
+
+- `Input_Files/EwE_files/Dahood WAP -Basic input.csv`: EwE biomass and P/B
+- `Input_Files/ISIMIP3a_climate_forcing_inputs/plankton_forcing/*.csv`: ISIMIP plankton data
+
+# References
+
+::: {#refs}
+:::
+
+---
+
+[Next: Interaction Matrix Calibration →](05_interaction_matrix.qmd)

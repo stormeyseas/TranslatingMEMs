@@ -1,0 +1,581 @@
+---
+title: "Step 5: Interaction Matrix Calibration"
+subtitle: "Translation of Dahood et al. (2019) EwE Model"
+author:
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+bibliography: references.bib
+---
+
+[← Previous: Resource Spectrum](04_resource_spectrum.qmd)
+
+```{r}
+#| label: setup
+#| include: false
+#| code-summary: "Load packages and documentation helper functions"
+
+# Source documentation helper functions
+source("doc_functions.R")
+```
+
+```{r}
+#| label: run-calibration
+#| code-summary: "Source R script for interaction matrix calibration"
+#| message: true
+#| warning: true
+#| output: true
+
+# Run the interaction matrix calibration script
+source_model_script("03_interaction_matrix_calibration.R")
+```
+
+# Overview
+
+This document describes the validation and calibration of the predator-prey interaction matrix for the Western Antarctic Peninsula mizer model. The interaction matrix determines the strength of feeding interactions between species and is a critical component of size-based food web models.
+
+In mizer, the interaction matrix modulates predation rates between species, working in conjunction with size-based feeding preferences to determine realized diet composition. The matrix was initially derived from the EwE diet composition data but requires validation against the species-specific parameters (particularly size ranges and feeding parameters) that were derived in Step 3.
+
+## Objectives
+
+1. **Validate** the existing interaction matrix against species parameters
+2. **Check consistency** with EwE diet composition data
+3. **Assess** size-based feeding rules and predator-prey size ratios
+4. **Determine** whether calibration adjustments are needed
+5. **Generate diagnostics** for interaction patterns
+
+# Background: Interaction Matrix in Mizer
+
+## Role of the Interaction Matrix
+
+In mizer, the feeding rate of predator species $i$ on prey species $j$ is determined by:
+
+$$\text{Feeding rate}_{i,j} = \theta_{ij} \times \phi_i(w, w_{prey}) \times N_j(w_{prey})$$
+
+Where:
+
+- $\theta_{ij}$: **Interaction coefficient** (from the interaction matrix) - species-level preference
+- $\phi_i(w, w_{prey})$: **Size preference function** - determines preferred prey sizes for each predator size
+- $N_j(w_{prey})$: **Prey abundance** - availability of prey at given size
+
+## Size Preference Function
+
+The size preference function follows a log-normal distribution:
+
+$$\phi_i(w, w_{prey}) = \exp\left[-\frac{(\ln(w_{prey}/w) - \beta_i)^2}{2\sigma_i^2}\right]$$
+
+Where:
+
+- $\beta_i$: **Preferred predator-prey mass ratio (PPMR)** - controls the peak of the preference (typically 100-1000, meaning predators prefer prey 100-1000 times smaller)
+- $\sigma_i$: **Width of size preference** - controls selectivity (smaller = more selective)
+
+## Interpretation
+
+The interaction matrix $\theta_{ij}$ represents:
+
+- **Species-level preference** independent of size
+- **Values 0-1**: Relative preference for prey species $j$ by predator $i$
+- **Value = 0**: Predator $i$ does not consume prey $j$ at all
+- **Value = 1**: Maximum preference (no avoidance)
+- **Intermediate values**: Partial preference/avoidance
+
+In practice, the interaction matrix can account for:
+
+- **Non-size-based preferences** (e.g., habitat segregation, behavioral avoidance)
+- **Taxonomic selectivity** (e.g., specialized predators)
+- **Accessibility** (e.g., deep-diving prey vs. surface predators)
+
+# EwE Diet Composition Data
+
+## Source Data
+
+The Dahood et al. (2019) EwE model includes a detailed diet composition matrix showing the proportion of each prey type in each predator's diet. This matrix was used to create the initial mizer interaction matrix.
+
+## EwE Diet Matrix Structure
+
+From [`Dahood WAP -Diet composition.csv`](../Input_Files/EwE_files/Dahood WAP -Diet composition.csv):
+
+- **Rows**: Prey groups (32 groups total)
+- **Columns**: Predator groups (32 groups total, though not all are predators)
+- **Values**: Proportion of predator's diet (should sum to ~1 for each predator)
+- **Additional rows**: Detritus, imports, and diet completeness checks
+
+## Key Prey Groups
+
+| EwE Group | Description | Role in Food Web |
+|-----------|-------------|------------------|
+| **Antarctic Krill** | *Euphausia superba* | Dominant prey for most predators |
+| **Other Euphausiids** | Other krill species | Secondary euphausiid prey |
+| **Myctophids** | Mesopelagic fish | Important for diving predators |
+| **Cephalopods** | Squid | Key prey for large predators |
+| **Small fish** | Various demersal fish | Shelf-associated prey |
+| **Zooplankton** | Micro-, meso-, macro-zoo | Base of pelagic food web |
+| **Phytoplankton** | Diatoms, small phyto | Primary producers |
+
+## Translation to Mizer
+
+When translating the EwE diet matrix to mizer interaction coefficients, several considerations apply:
+
+1. **Size integration**: EwE diet proportions represent all size classes, while mizer separates by size
+2. **Resource spectrum**: Zooplankton and phytoplankton become the resource spectrum, not explicit species
+3. **Species aggregation**: Some EwE groups were combined or excluded in mizer
+4. **Relative vs absolute**: Mizer interaction coefficients are relative preferences, not absolute diet proportions
+
+The initial interaction matrix was created by extracting the relevant species-to-species interactions from the EwE diet matrix, preserving the relative feeding preferences.
+
+# Interaction Matrix Structure
+
+## Species Included
+
+The interaction matrix includes all 26 species in the mizer model:
+
+**Fish** (6 species):
+- Cephalopods
+- Myctophids  
+- On-shelf fish
+- *Notothenia rossii*
+- *Champsocephalus gunnari*
+- *Gobionotothen gibberifrons*
+
+**Krill** (2 species):
+- Antarctic Krill (*Euphausia superba*)
+- Other Euphausiids
+
+**Seals** (5 species):
+- Killer Whale
+- Leopard Seal
+- Weddell Seal
+- Crabeater Seal
+- Antarctic Fur Seal
+- Southern Elephant Seal
+
+**Whales** (5 species):
+- Sperm Whale
+- Blue Whale
+- Fin Whale
+- Minke Whale
+- Humpback Whale
+
+**Penguins** (5 species):
+- Emperor Penguin
+- Gentoo Penguin
+- Chinstrap Penguin
+- Adelie Penguin
+- Macaroni Penguin
+
+**Birds** (1 species):
+- Flying Birds
+
+**Other** (1 species):
+- Salps
+
+## Matrix Dimensions
+
+The interaction matrix is a 26 × 26 square matrix where:
+
+- **Rows** represent prey species
+- **Columns** represent predator species
+- **Values** range from 0 (no interaction) to 1 (maximum preference)
+
+## Key Feeding Relationships
+
+Based on the EwE diet data, major feeding patterns include:
+
+### Krill-Centered Food Web
+
+Antarctic Krill is the dominant prey for:
+
+- **Baleen whales** (Blue, Fin, Minke, Humpback): 60-76% of diet
+- **Penguins** (Chinstrap, Adelie): 95-96% of diet
+- **Seals** (Crabeater, Leopard): 70-78% of diet
+- **Fish** (Myctophids, Notothenia): 25-90% of diet
+
+### Piscivorous Pathways
+
+Fish are important prey for:
+
+- **Large seals** (Weddell, Southern Elephant)
+- **Large penguins** (Emperor)
+- **Odontocete whales** (Killer, Sperm)
+
+### Cephalopod Specialists
+
+Squid are major prey for:
+
+- **Sperm Whales** (85% of diet)
+- **Southern Elephant Seals** (60% of diet)
+
+# Validation Results
+
+## Matrix Structure Checks
+
+The interaction matrix passed basic structural validation:
+
+**✓ Square Matrix**: All 26 species appear as both potential prey and predators, ensuring consistency.
+
+**✓ No Cannibalism**: All diagonal elements equal zero, meaning no species preys upon itself.
+
+**✓ Proper Dimensions**: 26 × 26 matrix with 676 total possible interactions.
+
+**Matrix Properties**:
+
+- **Active interactions**: 107 (15.8% of possible interactions)
+- **Sparsity**: 0.842 (84.2% of interactions are zero)
+- **Non-zero values**: Range from 0.001 to 0.962
+
+This high sparsity is expected and desirable in a food web model, reflecting specialist feeding strategies, size-based constraints, habitat segregation, and taxonomic selectivity.
+
+## Consistency with EwE
+
+The interaction matrix maintains consistency with the original EwE diet composition:
+
+**Diet Completeness**:
+
+| Metric | Value |
+|--------|-------|
+| **Minimum diet sum** | 0.000 |
+| **Maximum diet sum** | 1.000 |
+| **Mean diet sum** | 0.768 |
+
+**Incomplete Diets** (< 0.1 total): Antarctic Krill, Other Euphausiids, and Salps
+
+::: {.callout-note}
+## Expected Behavior
+
+These "incomplete" diets are correct. In mizer, small filter-feeders feed on the **resource spectrum** (phytoplankton and microzooplankton), not the species interaction matrix. Their feeding is handled separately through resource encounter rates.
+:::
+
+## Size-Based Feeding Rules
+
+Analysis of prey-predator size ratios for active feeding interactions:
+
+**Size Ratio Statistics** (using $w_{inf}$):
+
+| Metric | Value | Interpretation |
+|--------|-------|----------------|
+| **Minimum** | 0.0000 | Tiny prey |
+| **Median** | 0.0016 | Prey ~600× smaller |
+| **Maximum** | 18.75 | Prey larger than predator |
+
+**Interactions with Prey $w_{inf}$ > Predator $w_{inf}$**: 7 instances (all ecologically justified—killer whales on whale calves, fish on juvenile squid, etc.)
+
+## Feeding Selectivity
+
+Species-specific feeding parameters by functional group:
+
+| Category | N | Mean Beta | Mean Sigma | Strategy |
+|----------|---|-----------|------------|----------|
+| **Krill** | 2 | 10 | 2.0 | Filter feeders |
+| **Penguins** | 5 | 100 | 1.0 | Selective visual predators |
+| **Fish** | 6 | 175 | 1.55 | Moderately selective |
+| **Seals** | 6 | 450 | 1.2 | Selective mammal predators |
+| **Whales** | 5 | 360 | 0.88 | Highly selective |
+
+# Diagnostic Visualizations
+
+## Interaction Matrix Heatmap
+
+![Predator-Prey Interaction Matrix](../Models/AI-assisted/Attempt 1/plots/interaction_matrix_heatmap.png){#fig-interaction-heatmap}
+
+@fig-interaction-heatmap shows the complete interaction matrix with predators on the x-axis and prey on the y-axis. Darker colors indicate stronger interactions. Key patterns visible:
+
+- **Krill dominance**: Antarctic Krill column shows strong interactions across many predators
+- **Specialist feeders**: Sparse patterns for specialized predators (e.g., baleen whales)
+- **Generalist feeders**: Dense patterns for opportunistic predators
+
+## Diet Breadth by Predator
+
+![Number of Prey Species per Predator](../Models/AI-assisted/Attempt 1/plots/diet_breadth_by_predator.png){#fig-diet-breadth}
+
+@fig-diet-breadth shows the number of prey species in each predator's diet (non-zero interactions only). Key insights:
+
+- **Generalist vs specialist feeding strategies**
+- **Taxonomic constraints** (e.g., filter feeders have narrow diets)
+- **Size-based limitations** (small predators fewer prey options)
+
+## Size Ratio Distribution
+
+![Size Ratios for Active Feeding Interactions](../Models/AI-assisted/Attempt 1/plots/size_ratio_distribution.png){#fig-size-ratio-dist}
+
+@fig-size-ratio-dist shows the distribution of prey-to-predator size ratios (using $w_{inf}$ as reference) for all non-zero interactions. The red dashed line indicates equal sizes (ratio = 1).
+
+Expected pattern:
+
+- **Most interactions < 0** (prey smaller than predators)
+- **Peak around -2 to -3** (prey 100-1000× smaller, typical PPMR)
+- **Few interactions > 0** (prey larger than predators - may indicate issues)
+
+## Interaction Strength vs Size Ratio
+
+![Interaction Strength vs Prey-Predator Size Ratio](../Models/AI-assisted/Attempt 1/plots/interaction_vs_size_ratio.png){#fig-interaction-vs-size}
+
+@fig-interaction-vs-size shows the relationship between interaction strength and the size ratio between prey and predators. The smooth curve shows the general trend.
+
+Expected pattern:
+
+- **Stronger interactions when prey much smaller** (optimal PPMR)
+- **Weaker interactions when sizes similar** (difficult to capture)
+- **Rare interactions when prey larger** (infeasible or ontogenetic shifts)
+
+# Calibration Assessment
+
+## Decision Criteria
+
+The script evaluates whether calibration is needed based on:
+
+1. **Diet completeness**: Do predator diets sum to reasonable values?
+2. **Size consistency**: Are prey generally smaller than predators?
+3. **Matrix structure**: Is the matrix square and properly formatted?
+4. **Ecological realism**: Do feeding patterns match known ecology?
+
+## Script Recommendation vs Ecological Assessment
+
+### Automatic Assessment
+
+The validation script flagged two issues:
+
+1. **Incomplete diets**: Antarctic Krill, Other Euphausiids, and Salps have diet sums < 0.1
+2. **Size violations**: 7 interactions where prey $w_{inf}$ > predator $w_{inf}$
+
+### Ecological Evaluation
+
+Upon closer examination, these "issues" are actually **expected and appropriate**:
+
+**Incomplete Diets**:
+
+- ✓ **Antarctic Krill and Other Euphausiids** are filter feeders that consume phytoplankton and microzooplankton
+- ✓ **Salps** are gelatinous filter feeders that feed on phytoplankton
+- ✓ In mizer, their food comes from the **resource spectrum**, not the species interaction matrix
+- ✓ The EwE diet matrix confirms these groups feed on plankton, which are now part of the resource spectrum
+
+**Size Ratio "Violations"**:
+
+- ✓ **Killer Whale predation on whales**: Ecologically accurate—orcas prey on whale calves and can kill adults
+- ✓ **Fish eating cephalopods**: Fish consume juvenile squid, which are much smaller than adult squid $w_{inf}$
+- ✓ **Low interaction strengths**: Most "violations" have interaction values ≤ 0.01, indicating rare or opportunistic predation
+- ✓ **Mizer size structure**: The model tracks full size distributions, allowing appropriate size class interactions
+
+## Final Recommendation
+
+### No Calibration Required
+
+The existing interaction matrix from EwE is **ecologically sound and ready to use** without modification.
+
+**Rationale**:
+
+1. **Matrix structure**: Properly formatted, square, no cannibalism
+2. **Diet patterns**: Reflect known WAP food web structure
+3. **Size relationships**: Appropriate when accounting for ontogeny and size structure
+4. **Resource spectrum**: Correctly separates planktivores from piscivores
+5. **EwE fidelity**: Maintains consistency with validated EwE model
+
+### Files to Use
+
+**For mizer model setup, use the original files**:
+
+- [`interaction_matrix.csv`](../Models/AI-assisted/Attempt 1/interaction_matrix.csv): Wide format
+- [`interaction_matrix_long.csv`](../Models/AI-assisted/Attempt 1/interaction_matrix_long.csv): Long format
+
+**Calibrated files**: Not needed—original matrix is appropriate as-is
+
+## Potential Adjustments
+
+If calibration is recommended, potential adjustments might include:
+
+### Adjust for Size Incompatibilities
+
+For interactions where prey $w_{inf}$ > predator $w_{inf}$, consider:
+
+- **Reduce interaction strength** to reflect ontogenetic diet shifts
+- **Check for errors** in size parameter derivation
+- **Consider life history** (adults may eat juveniles of larger species)
+
+### Balance Incomplete Diets
+
+For predators with very incomplete diets (<0.5 total):
+
+- **Check resource spectrum access** - are they feeding on unmodeled groups?
+- **Review EwE data** - were some prey groups excluded?
+- **Consider benthos** - demersal feeders may rely on unmodeled benthic invertebrates
+
+### Refine Specialist Strategies
+
+For known specialists (e.g., Crabeater Seal on krill):
+
+- **Verify strong interaction** (typically >0.7)
+- **Minimize alternative prey** to prevent unrealistic diet switching
+- **Check beta/sigma values** match specialist feeding
+
+# Comparison with EwE Diet Matrix
+
+## Diet Composition Validation
+
+Detailed comparison tables are available in the calibration script output.
+
+## Key Differences
+
+When comparing mizer interaction coefficients to EwE diet proportions, note:
+
+1. **Mizer coefficients are relative preferences** not absolute diet proportions
+2. **Actual diet in mizer** emerges from interaction matrix + size preferences + prey availability
+3. **Resource spectrum changes** - plankton groups not in species matrix
+4. **Size integration** - EwE proportions aggregate across all sizes
+
+# Integration with Species Parameters
+
+## Feeding Parameters
+
+The interaction matrix works in concert with species-specific feeding parameters:
+
+| Parameter | Description | Typical Range | Effect on Diet |
+|-----------|-------------|---------------|----------------|
+| **beta** | Preferred PPMR (log scale) | 100-1000 | Controls preferred prey size |
+| **sigma** | Size selectivity | 0.8-2.0 | Controls diet breadth |
+| **h** | Maximum intake | Species-specific | Sets maximum consumption |
+| **interaction** | Species preference | 0-1 | Modulates by species |
+
+### Species with High Beta (Large PPMR)
+
+Species with $\beta > 500$ prefer much smaller prey:
+
+- Antarctic Krill (beta = 10): Feeds on resource spectrum
+- Other Euphausiids (beta = 10): Feeds on resource spectrum
+- Blue Whale (beta = 200): Filter feeder on krill
+
+These species require strong interactions with small prey or resource spectrum.
+
+### Species with Low Sigma (High Selectivity)
+
+Species with $\sigma < 1.0$ are highly selective:
+
+- Blue Whale (sigma = 0.8): Krill specialist
+- Chinstrap Penguin (sigma = 0.8): Krill specialist
+- Crabeater Seal (sigma = 1.0): Krill specialist
+
+These species should have sparse interaction matrices with strong values for key prey.
+
+### Species with High Sigma (Low Selectivity)
+
+Species with $\sigma > 1.5$ are generalists:
+
+- Cephalopods (sigma = 1.5)
+- On-shelf fish (sigma = 1.5)
+- Myctophids (sigma = 1.5)
+
+These species should have broader interaction matrices with moderate values across prey types.
+
+## Size Range Considerations
+
+### Small Predators
+
+Species with small $w_{inf}$ (< 1 kg):
+
+- **Antarctic Krill** (1 g): Feeds on resource spectrum only
+- **Other Euphausiids** (0.8 g): Feeds on resource spectrum only
+- **Salps** (0.1 g): Filter feeds on resource spectrum
+
+These require minimal or zero interactions with other species.
+
+### Large Predators
+
+Species with large $w_{inf}$ (> 1000 kg):
+
+- **Whales** (10-150 tonnes)
+- **Elephant Seals** (4 tonnes)
+- **Killer Whales** (8 tonnes)
+
+These can potentially feed on most other species, but may be constrained by:
+
+- **Feeding mode** (filter feeders limited to small prey)
+- **Foraging behavior** (habitat preferences)
+- **Gape limitations** (even large predators have size constraints)
+
+# Summary Statistics
+
+## Interaction Matrix Properties
+
+- **Matrix size**: 26 × 26 species
+- **Total possible interactions**: 676
+- **Active interactions**: 107 (15.8%)
+- **Sparsity**: 84.2%
+- **Mean prey species per predator**: 4.5
+- **Range**: 1 to 16 species
+
+## Diet Patterns
+
+- **Specialist predators** (1-3 prey): Crabeater Seal, Salps, Blue/Fin/Chinstrap specialists
+- **Generalist predators** (>10 prey): Killer Whale (16), On-shelf fish (10), Myctophids (9)
+- **Size ratios**: Median prey:predator = 0.0016 (prey ~600× smaller)
+
+# Key Findings
+
+1. **Interaction Matrix is Valid**: The EwE-derived matrix is ecologically appropriate and ready for use without calibration.
+
+2. **Krill-Centered Food Web**: Antarctic Krill appears as prey for 20 of 26 species, confirming its keystone role.
+
+3. **Appropriate Size Structure**: Median prey:predator size ratio of 0.0016 aligns with size-based feeding theory.
+
+4. **Resource Spectrum Integration**: Clear separation between planktivores (resource spectrum) and higher trophic levels.
+
+5. **High Sparsity Expected**: 84.2% zero interactions reflects specialist strategies and ecological constraints.
+
+# Interaction Matrix Decision
+
+## Use Original Matrix Without Calibration
+
+After comprehensive validation, the recommendation is to **use the original EwE-derived interaction matrix without modification**.
+
+**Justification**:
+
+1. ✓ **Ecologically validated**: Based on Dahood et al. (2019) EwE model
+2. ✓ **Structurally sound**: Square matrix, no cannibalism, appropriate sparsity
+3. ✓ **Size-appropriate**: When accounting for size structure, all interactions feasible
+4. ✓ **Resource integration**: Correctly separates planktivores from piscivores
+5. ✓ **Trophic realism**: Captures key WAP food web pathways
+
+## Files to Use
+
+**For Step 6 (Initial Model Setup) and beyond**:
+
+- **Wide format**: [`interaction_matrix.csv`](../Models/AI-assisted/Attempt 1/interaction_matrix.csv)
+- **Long format**: [`interaction_matrix_long.csv`](../Models/AI-assisted/Attempt 1/interaction_matrix_long.csv)
+
+**No calibrated versions needed**: The original files are appropriate as-is.
+
+## Implementation Notes
+
+When setting up the mizer model:
+
+1. Load interaction matrix as-is from CSV files
+2. Ensure species names match between matrices and species parameters
+3. Remember resource spectrum feeding handled separately
+4. Interaction matrix works multiplicatively with size preference function
+5. May adjust individual interactions during calibration (Step 7) if needed
+
+# Code and Data
+
+## Scripts
+
+- [`Models/AI-assisted/Attempt 1/03_interaction_matrix_calibration.R`](../Models/AI-assisted/Attempt 1/03_interaction_matrix_calibration.R): Validation and calibration analysis
+
+## Input Data
+
+- [`Models/AI-assisted/Attempt 1/species_parameters.csv`](../Models/AI-assisted/Attempt 1/species_parameters.csv): Species parameters from Step 3
+- [`Models/AI-assisted/Attempt 1/interaction_matrix.csv`](../Models/AI-assisted/Attempt 1/interaction_matrix.csv): Original interaction matrix
+- [`Input_Files/EwE_files/Dahood WAP -Diet composition.csv`](../Input_Files/EwE_files/Dahood WAP -Diet composition.csv): EwE diet data
+
+## Outputs
+
+- `interaction_matrix_heatmap.png`: Visual representation of interaction matrix
+- `diet_breadth_by_predator.png`: Number of prey per predator
+- `size_ratio_distribution.png`: Histogram of prey:predator size ratios
+- `interaction_vs_size_ratio.png`: Relationship between interaction strength and size
+
+# References
+
+::: {#refs}
+:::
+
+---
+
+[Next: Initial Model Setup →](06_initial_setup.qmd)

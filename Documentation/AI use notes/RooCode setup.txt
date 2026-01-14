@@ -1,0 +1,20 @@
+# RooCode setup
+
+I used RooCode within Positron (VS Code) to interface with the AI model.
+
+API Provider: OpenRouter
+Model: anthropic/claude-sonnet-4.5
+
+[x] Use custom base URL
+[x] Enable 1M context window (Beta)
+
+Context Window: 2000,000 tokens
+Max output: 64,000 tokens
+
+[✓] Enable reasoning
+
+Max tokens: 20480
+Max thinking tokens: 9216
+
+[✓] Enable todo list tool
+[✓] Enable editing through diffs

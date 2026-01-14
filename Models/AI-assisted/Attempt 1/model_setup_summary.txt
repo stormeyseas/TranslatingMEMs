@@ -1,0 +1,152 @@
+=============================================================
+  Step 6: Initial Model Setup and Steady State
+  Western Antarctic Peninsula Mizer Model
+  Generated: 2026-01-14 20:19:20 
+=============================================================
+
+MODEL STRUCTURE
+---------------
+Number of species: 26 
+  Fish: 6 
+  Krill: 2 
+  Seals: 6 
+  Whales: 5 
+  Penguins: 5 
+  Birds: 1 
+  Other: 1 
+
+Size bins: 200 
+Size range: 0.001 to 2e+08 g
+Resource spectrum bins: 195 
+
+RESOURCE SPECTRUM PARAMETERS
+----------------------------
+Kappa (carrying capacity): 257.4 
+Lambda (slope): 2.05 
+r_pp (regeneration rate): 11 
+w_pp_cutoff (cutoff): 10 g
+w_min: 1e-10 g
+
+INITIAL BIOMASS COMPARISON
+--------------------------
+Species-by-species comparison (EwE vs Mizer):
+
+Cephalopods                   : EwE =   2.4900, Mizer =   2.4900, Ratio =  1.00
+Myctophids                    : EwE =   3.2700, Mizer =   3.2700, Ratio =  1.00
+On-shelf fish                 : EwE =   5.2500, Mizer =   5.2500, Ratio =  1.00
+Notothenia rossii             : EwE =   0.1380, Mizer =   0.1380, Ratio =  1.00
+Champsocephalus gunnari       : EwE =   0.9000, Mizer =   0.9000, Ratio =  1.00
+Gobionotothen gibberifrons    : EwE =   1.2000, Mizer =   1.2000, Ratio =  1.00
+Antarctic Krill               : EwE = 110.1900, Mizer = 110.1900, Ratio =  1.00
+Other Euphausiids             : EwE = 148.0000, Mizer = 148.0000, Ratio =  1.00
+Killer Whale                  : EwE =   0.0075, Mizer =   0.0075, Ratio =  1.00
+Leopard Seal                  : EwE =   0.0084, Mizer =   0.0084, Ratio =  1.00
+Weddell Seal                  : EwE =   0.0812, Mizer =   0.0812, Ratio =  1.00
+Crabeater Seal                : EwE =   1.0978, Mizer =   1.0978, Ratio =  1.00
+Antarctic Fur Seal            : EwE =   0.0010, Mizer =   0.0010, Ratio =  1.00
+Southern Elephant Seal        : EwE =   0.0010, Mizer =   0.0010, Ratio =  1.00
+Sperm Whale                   : EwE =   0.0284, Mizer =   0.0284, Ratio =  1.00
+Blue Whale                    : EwE =   0.0072, Mizer =   0.0072, Ratio =  1.00
+Fin Whale                     : EwE =   0.0428, Mizer =   0.0428, Ratio =  1.00
+Minke Whale                   : EwE =   0.0473, Mizer =   0.0473, Ratio =  1.00
+Humpback Whale                : EwE =   0.0812, Mizer =   0.0812, Ratio =  1.00
+Emperor Penguin               : EwE =   0.0001, Mizer =   0.0001, Ratio =  1.00
+Gentoo Penguin                : EwE =   0.0012, Mizer =   0.0012, Ratio =  1.00
+Chinstrap Penguin             : EwE =   0.0214, Mizer =   0.0214, Ratio =  1.00
+Adelie Penguin                : EwE =   0.0058, Mizer =   0.0058, Ratio =  1.00
+Macaroni Penguin              : EwE =   0.0001, Mizer =   0.0001, Ratio =  1.00
+Flying Birds                  : EwE =   0.0040, Mizer =   0.0040, Ratio =  1.00
+Salps                         : EwE = 320.0000, Mizer = 320.0000, Ratio =  1.00
+
+Summary statistics:
+  Mean ratio: 1 
+  Median ratio: 1 
+  SD ratio: 1.63e-16 
+  Species within 50% of EwE: 26 / 26 
+
+STEADY STATE ASSESSMENT
+-----------------------
+Steady state achieved: FALSE 
+Mean CV (last 20 years): 0.718 
+Max CV (last 20 years): 2.8 
+
+Species-specific CV:
+  Cephalopods                   : CV = 2.8027
+  Myctophids                    : CV = 1.5315
+  On-shelf fish                 : CV = 0.7658
+  Notothenia rossii             : CV = 0.5002
+  Champsocephalus gunnari       : CV = 0.7953
+  Gobionotothen gibberifrons    : CV = 0.7658
+  Antarctic Krill               : CV = 1.2149
+  Other Euphausiids             : CV = 1.8732
+  Killer Whale                  : CV = 0.3017
+  Leopard Seal                  : CV = 0.4673
+  Weddell Seal                  : CV = 0.2926
+  Crabeater Seal                : CV = 0.2926
+  Antarctic Fur Seal            : CV = 0.2984
+  Southern Elephant Seal        : CV = 0.3667
+  Sperm Whale                   : CV = 0.5002
+  Blue Whale                    : CV = 0.2926
+  Fin Whale                     : CV = 0.2926
+  Minke Whale                   : CV = 0.2926
+  Humpback Whale                : CV = 0.2926
+  Emperor Penguin               : CV = 0.3404
+  Gentoo Penguin                : CV = 0.3837
+  Chinstrap Penguin             : CV = 0.3837
+  Adelie Penguin                : CV = 0.2926
+  Macaroni Penguin              : CV = 0.2926
+  Flying Birds                  : CV = 0.2926
+  Salps                         : CV = 2.7379
+
+
+Steady State Biomass (vs EwE):
+Cephalopods                   : EwE =   2.4900, Steady =   0.0000, Ratio =  0.00
+Myctophids                    : EwE =   3.2700, Steady =   0.0000, Ratio =  0.00
+On-shelf fish                 : EwE =   5.2500, Steady =   0.0000, Ratio =  0.00
+Notothenia rossii             : EwE =   0.1380, Steady =   0.0000, Ratio =  0.00
+Champsocephalus gunnari       : EwE =   0.9000, Steady =   0.0000, Ratio =  0.00
+Gobionotothen gibberifrons    : EwE =   1.2000, Steady =   0.0000, Ratio =  0.00
+Antarctic Krill               : EwE = 110.1900, Steady =   0.0000, Ratio =  0.00
+Other Euphausiids             : EwE = 148.0000, Steady =   0.0000, Ratio =  0.00
+Killer Whale                  : EwE =   0.0075, Steady =   0.0000, Ratio =  0.00
+Leopard Seal                  : EwE =   0.0084, Steady =   0.0000, Ratio =  0.00
+Weddell Seal                  : EwE =   0.0812, Steady =   0.0006, Ratio =  0.01
+Crabeater Seal                : EwE =   1.0978, Steady =   0.0075, Ratio =  0.01
+Antarctic Fur Seal            : EwE =   0.0010, Steady =   0.0000, Ratio =  0.01
+Southern Elephant Seal        : EwE =   0.0010, Steady =   0.0000, Ratio =  0.00
+Sperm Whale                   : EwE =   0.0284, Steady =   0.0000, Ratio =  0.00
+Blue Whale                    : EwE =   0.0072, Steady =   0.0000, Ratio =  0.01
+Fin Whale                     : EwE =   0.0428, Steady =   0.0003, Ratio =  0.01
+Minke Whale                   : EwE =   0.0473, Steady =   0.0003, Ratio =  0.01
+Humpback Whale                : EwE =   0.0812, Steady =   0.0006, Ratio =  0.01
+Emperor Penguin               : EwE =   0.0001, Steady =   0.0000, Ratio =  0.00
+Gentoo Penguin                : EwE =   0.0012, Steady =   0.0000, Ratio =  0.00
+Chinstrap Penguin             : EwE =   0.0214, Steady =   0.0000, Ratio =  0.00
+Adelie Penguin                : EwE =   0.0058, Steady =   0.0000, Ratio =  0.01
+Macaroni Penguin              : EwE =   0.0001, Steady =   0.0000, Ratio =  0.01
+Flying Birds                  : EwE =   0.0040, Steady =   0.0000, Ratio =  0.00
+Salps                         : EwE = 320.0000, Steady =   0.0000, Ratio =  0.00
+
+
+FILES GENERATED
+---------------
+Model files:
+  - initial_params.rds
+  - steady_state_params.rds
+  - steady_state_simulation.rds
+
+Plots:
+  - initial_spectrum.png
+  - steady_state_spectrum.png
+  - biomass_timeseries.png
+  - biomass_comparison_initial.png
+  - biomass_comparison_steady.png
+  - growth_curves.png
+  - feeding_level.png
+
+Summary:
+  - model_setup_summary.txt
+
+=============================================================
+  Model Setup Complete
+=============================================================

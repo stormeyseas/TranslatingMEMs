@@ -1,0 +1,441 @@
+---
+title: "Step 6.1: Feeding Level Diagnostics"
+subtitle: "Analysis of Feeding Rates After Extended Resource Spectrum"
+author:
+  - "Tormey E. Reimer"
+  - "Claude Sonnet 4.5"
+date: last-modified
+---
+
+[← Previous: Initial Model Setup](06_initial_setup.qmd)
+
+# Overview
+
+This document analyzes feeding levels for all species in the Western Antarctic Peninsula mizer model after implementing the extended resource spectrum. The purpose is to diagnose whether species are successfully feeding and identify potential causes of the observed model collapse.
+
+# Load Model Results
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+
+library(mizer)
+library(tidyverse)
+library(here)
+
+# Set model directory
+model_dir <- here("..", "Models", "AI-assisted", "Attempt 1")
+
+# Load the initial params
+params_initial <- readRDS(file.path(model_dir, "initial_params.rds"))
+
+# Load the steady state simulation
+sim <- readRDS(file.path(model_dir, "steady_state_simulation.rds"))
+
+# Load the steady state params
+params_steady <- readRDS(file.path(model_dir, "steady_state_params.rds"))
+
+# Load species parameters
+species_params <- read_csv(file.path(model_dir, "species_parameters.csv"),
+                          show_col_types = FALSE)
+
+# Load resource parameters
+resource_params <- readRDS(file.path(model_dir, "resource_params.rds"))
+```
+
+# Resource Spectrum Parameters
+
+Let's first confirm the extended resource spectrum parameters:
+
+```{r}
+#| label: resource-params
+
+cat("Extended Resource Spectrum Parameters:\n")
+cat("=====================================\n")
+cat(sprintf("Size range: %.2e to %.2f g\n", 
+            resource_params$w_min, resource_params$w_pp_cutoff))
+cat(sprintf("Kappa: %.2f\n", resource_params$kappa))
+cat(sprintf("Lambda: %.2f\n", resource_params$lambda))
+cat(sprintf("Resource rate: %.4f /day (%.2f /year)\n", 
+            resource_params$r_pp, resource_params$r_pp_annual))
+cat(sprintf("Target biomass: %.0f g/m² (%.0f t/km²)\n",
+            resource_params$target_biomass, resource_params$target_biomass))
+cat(sprintf("Forcing strategy: %s\n", resource_params$forcing_strategy))
+```
+
+# Initial Feeding Levels
+
+Feeding level represents the proportion of maximum consumption rate that a species achieves. Values should typically be between 0.3 and 0.8 for a healthy, stable ecosystem.
+
+```{r}
+#| label: initial-feeding-plot
+#| fig-width: 12
+#| fig-height: 10
+#| fig-cap: "Initial feeding levels by species and size"
+
+plotFeedingLevel(params_initial)
+```
+
+## Initial Feeding Level Statistics
+
+```{r}
+#| label: initial-feeding-stats
+
+# Calculate feeding levels
+feeding_initial <- getFeedingLevel(params_initial)
+
+# Get size-weighted mean feeding level for each species
+feeding_stats_initial <- data.frame(
+  species = dimnames(feeding_initial)$sp,
+  mean_feeding = apply(feeding_initial, 1, mean, na.rm = TRUE),
+  min_feeding = apply(feeding_initial, 1, min, na.rm = TRUE),
+  max_feeding = apply(feeding_initial, 1, max, na.rm = TRUE),
+  category = species_params$category
+) %>%
+  arrange(mean_feeding)
+
+cat("Initial Feeding Levels by Species:\n")
+cat("===================================\n\n")
+print(feeding_stats_initial, digits = 3)
+
+cat("\n\nSummary by Category:\n")
+feeding_by_category <- feeding_stats_initial %>%
+  group_by(category) %>%
+  summarize(
+    n = n(),
+    mean_feeding = mean(mean_feeding),
+    min_feeding = min(mean_feeding),
+    max_feeding = max(mean_feeding),
+    .groups = "drop"
+  ) %>%
+  arrange(mean_feeding)
+print(feeding_by_category, digits = 3)
+
+# Identify species with very low feeding
+low_feeding <- feeding_stats_initial %>%
+  filter(mean_feeding < 0.3)
+
+cat("\n\nSpecies with mean feeding level < 0.3:\n")
+if (nrow(low_feeding) > 0) {
+  print(low_feeding, digits = 3)
+} else {
+  cat("None - all species have adequate feeding levels\n")
+}
+```
+
+# Steady State Feeding Levels
+
+Now let's check feeding levels at the end of the 100-year simulation:
+
+```{r}
+#| label: steady-feeding-plot
+#| fig-width: 12
+#| fig-height: 10
+#| fig-cap: "Steady state feeding levels by species and size"
+
+plotFeedingLevel(params_steady)
+```
+
+## Steady State Feeding Level Statistics
+
+```{r}
+#| label: steady-feeding-stats
+
+# Calculate feeding levels
+feeding_steady <- getFeedingLevel(params_steady)
+
+# Get size-weighted mean feeding level for each species
+feeding_stats_steady <- data.frame(
+  species = dimnames(feeding_steady)$sp,
+  mean_feeding = apply(feeding_steady, 1, mean, na.rm = TRUE),
+  min_feeding = apply(feeding_steady, 1, min, na.rm = TRUE),
+  max_feeding = apply(feeding_steady, 1, max, na.rm = TRUE),
+  category = species_params$category
+) %>%
+  arrange(mean_feeding)
+
+cat("Steady State Feeding Levels by Species:\n")
+cat("========================================\n\n")
+print(feeding_stats_steady, digits = 3)
+
+cat("\n\nSummary by Category:\n")
+feeding_by_category_steady <- feeding_stats_steady %>%
+  group_by(category) %>%
+  summarize(
+    n = n(),
+    mean_feeding = mean(mean_feeding, na.rm = TRUE),
+    min_feeding = min(mean_feeding, na.rm = TRUE),
+    max_feeding = max(mean_feeding, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(mean_feeding)
+print(feeding_by_category_steady, digits = 3)
+```
+
+# Comparison: Initial vs Steady State
+
+```{r}
+#| label: feeding-comparison
+#| fig-width: 12
+#| fig-height: 8
+#| fig-cap: "Comparison of mean feeding levels: Initial vs Steady State"
+
+comparison <- feeding_stats_initial %>%
+  select(species, category, initial_feeding = mean_feeding) %>%
+  left_join(
+    feeding_stats_steady %>% select(species, steady_feeding = mean_feeding),
+    by = "species"
+  ) %>%
+  pivot_longer(cols = c(initial_feeding, steady_feeding),
+               names_to = "state", 
+               values_to = "feeding_level")
+
+ggplot(comparison, aes(x = reorder(species, feeding_level), 
+                       y = feeding_level, 
+                       fill = state)) +
+  geom_col(position = "dodge") +
+  geom_hline(yintercept = 0.3, linetype = "dashed", color = "red", linewidth = 1) +
+  coord_flip() +
+  scale_fill_manual(values = c("initial_feeding" = "steelblue", 
+                                "steady_feeding" = "darkred"),
+                    labels = c("Initial", "Steady State")) +
+  facet_wrap(~category, scales = "free_y", ncol = 1) +
+  labs(
+    title = "Feeding Levels: Initial vs Steady State",
+    subtitle = "Red dashed line indicates minimum healthy feeding level (0.3)",
+    x = "Species",
+    y = "Mean Feeding Level",
+    fill = "Model State"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+# Resource Availability Check
+
+Let's check if resources are actually available to consumers:
+
+```{r}
+#| label: resource-check
+
+# Get resource spectrum
+resource_n <- params_initial@initial_n_pp
+resource_w <- params_initial@w_full[1:length(resource_n)]
+
+# Calculate resource biomass by size
+resource_biomass_by_size <- resource_n * resource_w * params_initial@dw_full[1:length(resource_n)]
+total_resource_biomass <- sum(resource_biomass_by_size)
+
+cat("Resource Spectrum Analysis:\n")
+cat("===========================\n")
+cat(sprintf("Total resource biomass: %.2f t/km²\n", total_resource_biomass))
+cat(sprintf("Target resource biomass: %.2f t/km²\n", resource_params$target_biomass))
+cat(sprintf("Achievement: %.1f%%\n", 100 * total_resource_biomass / resource_params$target_biomass))
+
+# Check resource biomass in size ranges relevant to consumers
+cat("\nResource biomass by size range:\n")
+size_ranges <- list(
+  "1e-10 to 1e-6 g (phyto-sized)" = c(1e-10, 1e-6),
+  "1e-6 to 0.01 g (small zoo)" = c(1e-6, 0.01),
+  "0.01 to 1 g (medium zoo)" = c(0.01, 1),
+  "1 to 10 g (large zoo/particles)" = c(1, 10)
+)
+
+for (range_name in names(size_ranges)) {
+  range_vals <- size_ranges[[range_name]]
+  in_range <- resource_w >= range_vals[1] & resource_w <= range_vals[2]
+  biomass_in_range <- sum(resource_biomass_by_size[in_range])
+  cat(sprintf("  %-35s: %8.2f t/km²\n", range_name, biomass_in_range))
+}
+```
+
+# Encounter Rates
+
+Let's check encounter rates for key species to see if they can actually find food:
+
+```{r}
+#| label: encounter-rates
+
+# Get encounter rates for initial state
+encounter_initial <- getEncounter(params_initial)
+
+# Calculate mean encounter rate by species
+encounter_stats <- data.frame(
+  species = dimnames(encounter_initial)$sp,
+  mean_encounter = apply(encounter_initial, 1, mean, na.rm = TRUE),
+  category = species_params$category
+) %>%
+  arrange(mean_encounter)
+
+cat("Mean Encounter Rates by Species (Initial State):\n")
+cat("================================================\n\n")
+print(encounter_stats, digits = 3)
+
+# Species with very low encounter rates
+low_encounter <- encounter_stats %>%
+  filter(mean_encounter < 1e-10)
+
+cat("\n\nSpecies with very low encounter rates:\n")
+if (nrow(low_encounter) > 0) {
+  print(low_encounter, digits = 3)
+} else {
+  cat("None - all species have adequate encounter rates\n")
+}
+```
+
+# Predation Mortality
+
+Check if predation mortality is causing issues:
+
+```{r}
+#| label: predation-mortality
+
+# Get predation mortality
+pred_mort <- getPredMort(params_initial)
+
+# Calculate mean predation mortality by species
+if (length(dim(pred_mort)) == 2 && nrow(pred_mort) > 0) {
+  pred_mort_stats <- data.frame(
+    species = species_params$species,
+    mean_pred_mort = apply(pred_mort, 1, mean, na.rm = TRUE),
+    max_pred_mort = apply(pred_mort, 1, max, na.rm = TRUE),
+    z0 = species_params$z0
+  ) %>%
+    mutate(
+      total_mortality = mean_pred_mort + z0,
+      pred_proportion = mean_pred_mort / total_mortality
+    ) %>%
+    arrange(desc(total_mortality))
+  
+  cat("Mortality Analysis by Species:\n")
+  cat("==============================\n\n")
+  print(pred_mort_stats, digits = 3)
+} else {
+  cat("Predation mortality data not available or has unexpected structure\n")
+  cat("Dimensions:", paste(dim(pred_mort), collapse = " x "), "\n")
+}
+```
+
+# Growth Rates
+
+Check if species can grow properly:
+
+```{r}
+#| label: growth-check
+#| fig-width: 12
+#| fig-height: 8
+#| fig-cap: "Growth curves for selected species"
+
+# Plot growth curves for subset of species
+plotGrowthCurves(params_initial, 
+                 species = species_params$species[1:min(12, nrow(species_params))])
+```
+
+# Critical Size Classes
+
+Check if smallest size classes have adequate resources:
+
+```{r}
+#| label: critical-sizes
+
+# For each species, check feeding level at recruitment size (w_min)
+critical_feeding <- data.frame(
+  species = species_params$species,
+  w_min = species_params$w_min,
+  category = species_params$category
+)
+
+# Get feeding level at w_min for each species
+for (i in 1:nrow(critical_feeding)) {
+  sp <- critical_feeding$species[i]
+  w_min <- critical_feeding$w_min[i]
+  
+  # Find closest size bin
+  sp_idx <- which(dimnames(feeding_initial)$sp == sp)
+  w_idx <- which.min(abs(params_initial@w - w_min))
+  
+  critical_feeding$feeding_at_wmin[i] <- feeding_initial[sp_idx, w_idx]
+}
+
+critical_feeding <- critical_feeding %>%
+  arrange(feeding_at_wmin)
+
+cat("Feeding Level at Recruitment Size (w_min):\n")
+cat("==========================================\n\n")
+print(critical_feeding, digits = 3)
+
+cat("\n\nSpecies with feeding < 0.3 at recruitment:\n")
+low_recruitment_feeding <- critical_feeding %>%
+  filter(feeding_at_wmin < 0.3)
+if (nrow(low_recruitment_feeding) > 0) {
+  print(low_recruitment_feeding, digits = 3)
+} else {
+  cat("None - all species have adequate feeding at recruitment size\n")
+}
+```
+
+# Diagnosis Summary
+
+```{r}
+#| label: diagnosis-summary
+
+cat("\n")
+cat("=" , rep("=", 60), "\n", sep = "")
+cat("FEEDING LEVEL DIAGNOSTIC SUMMARY\n")
+cat("=" , rep("=", 60), "\n\n", sep = "")
+
+cat("1. RESOURCE AVAILABILITY:\n")
+cat(sprintf("   - Actual resource biomass: %.2f t/km²\n", total_resource_biomass))
+cat(sprintf("   - Target resource biomass: %.2f t/km²\n", resource_params$target_biomass))
+cat(sprintf("   - Achievement: %.1f%%\n\n", 100 * total_resource_biomass / resource_params$target_biomass))
+
+cat("2. INITIAL FEEDING LEVELS:\n")
+cat(sprintf("   - Species with mean feeding < 0.3: %d/%d\n", 
+            nrow(low_feeding), nrow(species_params)))
+if (nrow(low_feeding) > 0) {
+  cat("   - Affected species:", paste(low_feeding$species, collapse = ", "), "\n")
+}
+cat("\n")
+
+cat("3. ENCOUNTER RATES:\n")
+cat(sprintf("   - Species with very low encounter: %d/%d\n", 
+            nrow(low_encounter), nrow(species_params)))
+if (nrow(low_encounter) > 0) {
+  cat("   - Affected species:", paste(low_encounter$species, collapse = ", "), "\n")
+}
+cat("\n")
+
+cat("4. RECRUITMENT FEEDING:\n")
+cat(sprintf("   - Species with feeding < 0.3 at w_min: %d/%d\n",
+            nrow(low_recruitment_feeding), nrow(species_params)))
+if (nrow(low_recruitment_feeding) > 0) {
+  cat("   - Affected species:", paste(low_recruitment_feeding$species, collapse = ", "), "\n")
+}
+cat("\n")
+
+cat("=" , rep("=", 60), "\n", sep = "")
+```
+
+# Key Findings
+
+Based on the analysis above:
+
+1. **Resource Biomass**: Check if actual resource biomass matches the target
+2. **Feeding Levels**: Identify species with critically low feeding levels (< 0.3)
+3. **Size-Specific Issues**: Determine if feeding problems are concentrated at specific sizes
+4. **Category Patterns**: Look for systematic issues by taxonomic group
+
+# Recommendations
+
+If feeding levels are low, potential solutions include:
+
+1. **Increase resource biomass further**: Adjust kappa in [`02_resource_spectrum.R`](../Models/AI-assisted/Attempt 1/02_resource_spectrum.R) to target 10,000-20,000 t/km²
+2. **Adjust feeding parameters**: Modify h (max intake), beta (PPMR), or sigma (selectivity) for affected species
+3. **Check size ranges**: Ensure w_min values allow species to access appropriate resource sizes
+4. **Verify interaction matrix**: Ensure species can feed on available prey
+5. **Adjust resource regeneration**: Increase r_pp if resources are being depleted too quickly
+
+---
+
+[Next: Further Calibration →](07_calibration.qmd)

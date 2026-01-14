@@ -1,0 +1,46 @@
+# Steps I took, including AI steps
+
+1. I directed Claude to create the index file, which would serve as the basis for all steps and files going forward (roo_task_jan-7-2026_9-27-40-pm.md). I manually ammended the index file created to skip the step where the Dahood et al. (2019) data would be extracted from the model - these files are already provided.
+
+3. Based on the "Software requirements" suggested by Claude, I installed all the required packages along with renv for package tracking. I also manually created quarto documents that Claude could populate throughout the process and asked Claude to generate me a _quarto.yml file with some of my favourite specifications.
+
+4. I directed Claude to complete the model structure setup task it had previously detailed in the index. I also specifically instructed it to present me with the opportunity to make key decisions (roo_task_jan-7-2026_10-22-15-pm.md). During this interaction I was asked key questions by Claude 4-5 times. The answers were not always obvious to me (they were key structural questions that would affect the scientific output of the model) but only took me a couple of minutes to answer. I used my ecological knowledge to answer (e.g. large mammals may be keystone species) and also my knowledge of the Dahood et al. (2019) paper that Claude was supposed to have read but may not have internalised (e.g. that Table 3 detailed specific predator-prey interactions).
+
+5. I read through the entire documentation of 02_model_structure to make sure that it was as we'd discussed. I made some minor formatting adjustments but no changes to content.
+
+6. I then directed Claude to complete Step 3 as detailed in the index (roo_task_jan-12-2026_6-48-06-pm.md). During this interaction I was asked key questions by Claude twice. Unlike last time, I thought Claude's suggestions were reasonable each time and so took its recommended actions. Apparently I don't have my PATH set up correctly so Claude can't actually run any R code - I will have to fix that before going any further with Claude. However, Claude generated an R script for me to run and suggested I review the generated parameters for biological realism.
+
+7. I manually ran the R script that Claude generated, then I asked Claude to help me add R to my PATH so it could run commands. It generated a step-by-step guide on how to do it so I followed those instructions. I asked Claude to check that it was able to run R commands and it confirmed that it could.
+
+9. Before moving on to Step 4 I asked Claude to check that the mizer parameters it had come up with were reasonable (roo_task_jan-14-2026_1-41-50-pm.md). I rendered all documentation so far (this required me manually installing knitr, rmarkdown and yaml manually).
+
+10. In reading through the parameter assessment document I noticed that some species size ranges seemed off, particularly the Antarctic fur seal which was given a size range of 90-120g. I asked Claude to re-check all of its seal parameters and get back to me. This seemed to work (it immediately found its mistake) however the part of the process where Claude actually used Google to search for body size ranges was EXCRUCIATINGLY slow. After ~10 minutes I closed the window to stop the process as I think it got stuck trying to press "Enter" on Google, and then asked the question again without the "search the web" instruction I originally included (roo_task_jan-14-2026_2-32-01-pm.md). I think it would have been better for me to collect the references myself (or maybe use another AI-powered tool like ResearchRabbit), put them into a folder where Claude could access, and just have it read the references I specified.
+
+11. I rendered the parameter assessment document again and the issue seemed to be fixed.
+
+12. I asked Claude to complete Step 4: Resource Spectrum Parameterization (roo_task_jan-14-2026_2-56-00-pm.md). While reading through its output I noticed Claude had mentioned an option that could be "turned on" during the calibration phase (time-varying plankton capacity) so I explicitly told it to leave a note for its future self in the calibration documentation.
+
+13. After rendering this documentation I realised that while Claude had created an R script and included source() in the documentation, it didn't actually run it so it couldn't validate the outputs. I explicitly told Claude to replace the "Validation" section of 04_resource_spectrum.qmd with actual validation code based on the script outputs (roo_task_jan-14-2026_3-17-37-pm.md) and re-rendered the documentation to have a look. At this point I'll admit that I'm not familiar enough with the technicalities of mizer to be able to assess whether these resource spectra are reasonable or not. 
+
+14. I asked Claude to complete Step 5: Interaction Matrix Calibration. This required a little more prompt refinement than previous steps as on the first try Claude was confused as to why the interaction matrix files already existed. When I realised it might overwrite existing work I stopped the model and reworded my prompt to clarify the task (I was just extrapolating from the Step 5 section in the index) and explicitly tell it not to overwrite existing interaction matrix files (roo_task_jan-14-2026_3-47-28-pm.md). I also explicitly told Claude to write the R script, generate the first part of the documentation, run the R script, and then generate the last part of the documentation using the files produced. This worked a lot better than just allowing Claude to do things on its own.
+
+15. I asked Claude to complete Step 6: Initial Model Setup and Steady State (roo_task_jan-14-2026_4-13-30-pm.md). For the last step and this one I was able to just copy-paste my prompt and make a few adjustments rather than typing out a whole new prompt, which was better. This time Claude ran into some issues with its R code, but it was able to fix them without my intervention.
+	- I feel like I'm getting the hang of the exact level of specificity Claude needs and consolidating all my requirements/preferences into Claude-friendly instructions. It's also possible Claude is learning from me, as with each quarto file generated I find myself needing to make fewer and fewer formatting adjustments. Also, it might be reading the AI steps.txt file even when I haven't asked it to, as between this step and the last one I wrote a note to my future self to remind me to ask Claude to use specific code chunk yamls in its documentation, and as I write this I'm watching Claude generate a file with those options, which it hadn't previously done. 
+
+16. I rendered all documentation up to this point and reviewed the last two files created (Steps 5 and 6). There were a number of errors in the code due to naming mismatches in previous R scripts but Claude was able to fix them. At this point I decided I needed to tell Claude to tighten up the documentation a little bit, as every step was generating extremely long documents with redundant information (roo_task_jan-14-2026_5-11-15-pm.md). As part of this process I asked Claude to generate a document reminding itself of the documentation requirements so it can stick to the style guidelines going forward.
+
+17: After reviewing the documentation for model steady state I noticed that the model was completely collapsing, and worked back and forth with Claude to try and diagnose the problem and come up with a solution (roo_task_jan-14-2026_6-07-59-pm.md). This eventually required some pretty major changes to the model so I worked with Claude to implement them (roo_task_jan-14-2026_6-46-37-pm.md). This seemed to make a difference but didn't completely solve the problem. I tried once again and we're getting closer (roo_task_jan-14-2026_8-35-54-pm.md).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
